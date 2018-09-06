@@ -126,36 +126,36 @@ class Analyser(object):
 			if(dist > self.maxPinDist or dist < self.minPinDist):
 				return False
 		return True
+	
 	def topCornersUsingContour(self,bw_img):
-		bw_img = np.uint8(bw_img)
-		im2, contours, hierarchy = cv2.findContours(bw_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		arr = np.array(contours)
+		contourBoxes = self.findContourBoxes(bw_img)
 		topCorners = []
-		for cnt in contours:
-			if(cv2.contourArea(cnt) > 140):
-				rect = cv2.minAreaRect(cnt)
-				box = cv2.boxPoints(rect)
-				box = np.int0(box)
-				top2Indexes = np.argpartition(box[:, 1], 2)[:2]
-				for corner in top2Indexes:
-					topCorners.append(box[corner])
-		#print(np.shape(topCorners))
+		top2Indexes = np.argpartition(box[:, 1], 2)[:2]
+		for corner in top2Indexes:
+			topCorners.append(box[corner])
 		return topCorners
 
 	def botCornersUsingContour(self,bw_img):
+		contourBoxes = self.findContourBoxes(bw_img)
+		botCorners = []
+		bot2Indexes = np.argpartition(box[:, 1], 2)[-2:]
+		for corner in bot2Indexes:
+			botCorners.append(box[corner])
+		return botCorners
+
+	def findContourBoxes(self,bw_img):
 		bw_img = np.uint8(bw_img)
 		im2, contours, hierarchy = cv2.findContours(bw_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-		arr = np.array(contours)
-		botCorners = []
+		contours = np.array(contours)
+		boxes = []
 		for cnt in contours:
 			if(cv2.contourArea(cnt) > 140):
 				rect = cv2.minAreaRect(cnt)
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
-				bot2Indexes = np.argpartition(box[:, 1], 2)[-2:]
-				for corner in bot2Indexes:
-					botCorners.append(box[corner])
-		return botCorners
+				boxes.append(box)
+		return boxes
+
 	def getBot20(self,corners):
 
 		"""preprocessing array"""

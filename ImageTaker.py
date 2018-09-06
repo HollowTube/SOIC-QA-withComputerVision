@@ -70,6 +70,7 @@ class ImageTaker(object):
 		main = self.cropROI(self.mainZone,self.binaryPin)
 		centerLetteringBin = self.cropROI(self.centerLetteringZone,self.main)
 		return centerLetterBin
+
 	def addROIRectangles(self):
 		img = self.main
 		cv2.rectangle(self.raw,(self.mainZone[0],self.mainZone[1]),(self.mainZone[2],self.mainZone[3]),(255,255,0),3)
