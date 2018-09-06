@@ -1,5 +1,5 @@
-import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#import sys
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -16,12 +16,11 @@ class ImageTaker(object):
 
 		self.thresholdPin = 198
 		self.thresholdLetter = 180
-
 	
 		#ROIs in the format of (x1,y1,x2,y2)
-		self.mainZone = np.int0((10, 200, 550, 440))
+		self.mainZone = np.int0((45, 10, 600, 450))
 		self.topPinRowZone = (30, 10, 540, 150)
-		self.botPinRowZone = (30, 350, 540, 440)
+		self.botPinRowZone = (30, 350, 540, 430)
 		self.centerLetteringZone = (297, 259, 459, 323)
 		self.BLPinZone = (60, 350, 100, 419)
 		self.URPinZone =(470, 10, 520, 80)
@@ -71,7 +70,16 @@ class ImageTaker(object):
 		main = self.cropROI(self.mainZone,self.binaryPin)
 		centerLetteringBin = self.cropROI(self.centerLetteringZone,self.main)
 		return centerLetterBin
-		
+	def addROIRectangles(self):
+		img = self.main
+		cv2.rectangle(self.raw,(self.mainZone[0],self.mainZone[1]),(self.mainZone[2],self.mainZone[3]),(255,255,0),3)
+		cv2.rectangle(img,(self.topPinRowZone[0],self.topPinRowZone[1]),(self.topPinRowZone[2],self.topPinRowZone[3]),(0,255,0),3)
+		cv2.rectangle(img,(self.botPinRowZone[0],self.botPinRowZone[1]),(self.botPinRowZone[2],self.botPinRowZone[3]),(0,255,0),3)
+		cv2.rectangle(img,(self.centerLetteringZone[0],self.centerLetteringZone[1]),(self.centerLetteringZone[2],self.centerLetteringZone[3]),(0,255,0),3)
+		cv2.rectangle(img,(self.BLPinZone[0],self.BLPinZone[1]),(self.BLPinZone[2],self.BLPinZone[3]),(0,255,0),3)
+		cv2.rectangle(img,(self.URPinZone[0],self.URPinZone[1]),(self.URPinZone[2],self.URPinZone[3]),(0,255,0),3)
+		return img
+
 if __name__ == "__main__":
 	print("starting camera")
 	foo = ImageTaker()
@@ -79,6 +87,7 @@ if __name__ == "__main__":
 	while True:
 		foo.captureBinarizePinsAndLettering()
 		foo.cropOutAllZonesinColor()
+		foo.addROIRectangles()
 		raw = foo.raw
 		cropped = foo.main
 		cropcrop = foo.topPinRow
