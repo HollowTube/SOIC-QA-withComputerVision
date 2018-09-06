@@ -1,0 +1,37 @@
+# This is the parameter list
+
+# Pin binary thresholds
+
+# PIN THRESHOLD
+198
+
+# LETTER THRESHOLD
+180
+
+# MAIN REGIONS OF INTEREST
+# Write in the following format: x1,y1,x2,y2
+
+# TOP PIN ROW
+30, 10, 540, 150
+
+# BOTTOM PIN ROW
+30, 350, 540, 440
+
+# CENTER LETTERING
+297, 259, 459, 323
+
+# UPPER RIGHT PIN
+60, 350, 100, 419
+
+# BOTTOM LEFT PIN
+470, 10, 520, 80
+
+
+
+#PIN SPACING PARAMETERS
+
+# MAX PIXEL DISTANCE
+50
+
+# MINIMUM PIXEL DISTANCE
+43
