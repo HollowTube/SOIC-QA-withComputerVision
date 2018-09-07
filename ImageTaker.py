@@ -26,6 +26,7 @@ class ImageTaker(object):
 		self.BLPinZone = (60, 350, 100, 419)
 		self.URPinZone =(470, 10, 520, 80)
 
+		
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
 		self.binaryLettering= np.float32()

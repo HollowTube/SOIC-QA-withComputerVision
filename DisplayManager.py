@@ -63,7 +63,8 @@ class DisplayManager(object):
 	def displayBinary(self):
 		bw_img = self.cam.binaryPin.copy()
 		cv2.imshow('Binary', bw_img)
-	def drawContourBoxes(self):
+	def drawContourBoxes(self,img):
+		
 		pass
 if __name__ == "__main__":
 	print("starting camera")
