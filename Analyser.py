@@ -198,23 +198,19 @@ class Analyser(object):
 		arr = arr.reshape(arr.shape[0],2)
 
 		sortInd = np.lexsort((arr[:,1],arr[:,0]))
-		top20 = arr[sortInd]
+		top20 = arr[sortInd]	
 
 		finalTop = []
 		for foo in range(0,10):
 			packet = [top20[foo*4],top20[foo*4+1],top20[foo*4+2],top20[foo*4+3]]
-			packet = np.array(packet)
-			#print(packet)	
+			packet = np.array(packet)			#print(packet)	
 			top2Ind = np.lexsort((packet[:,0],packet[:,1]))[:-2]
-			#print(packet[top2Ind])
 			finalTop.append(packet[top2Ind[0]])
 			finalTop.append(packet[top2Ind[1]])
-		#print("top")
 		finalTop = np.array(finalTop)
 		sortInd = np.lexsort((finalTop[:,1],finalTop[:,0]))
 		finalTop = finalTop[sortInd]
-		#print(finalTop)
-		#print(finalTop.shape)
+
 		
 		return finalTop
 if __name__ == "__main__":

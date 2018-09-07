@@ -26,9 +26,11 @@ class ImageTaker(object):
 		self.BLPinZone = (60, 350, 100, 419)
 		self.URPinZone =(470, 10, 520, 80)
 		
+
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
 		self.binaryLettering= np.float32()
+
 
 	#updates stored images within object
 	#3 images stored, raw, binary for the pins, and binary for the lettering
@@ -79,6 +81,7 @@ class ImageTaker(object):
 		main = self.cropROI(self.mainZone,self.binaryLettering)
 		self.centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
 		return self.centerLetteringBin
+
 
 if __name__ == "__main__":
 	print("starting camera")

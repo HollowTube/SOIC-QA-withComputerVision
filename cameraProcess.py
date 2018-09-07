@@ -281,44 +281,6 @@ class camera(object):
 		
 		return finalTop
 
-	def displayDebug(self, zone = None):
-		raw,binaryPin, binaryLetters = self.captureBinarizePinsAndLettering()
-		rawCopy = raw.copy()
-		if zone == "Missing":
-			cv2.rectangle(rawCopy,(self.centerLettering[0],self.centerLettering[1]),(self.centerLettering[2],self.centerLettering[3]),(255,0,255),3)
-		elif zone == "Out of Tray":
-			cv2.rectangle(rawCopy,(self.BLPin[0],self.BLPin[1]),(self.BLPin[2],self.BLPin[3]),(255,0,255),3)
-			cv2.rectangle(rawCopy,(self.URPin[0],self.URPin[1]),(self.URPin[2],self.URPin[3]),(255,0,255),3)
-		elif zone == "Top Pins":
-			cv2.rectangle(rawCopy,(self.topPinRow[0],self.topPinRow[1]),(self.topPinRow[2],self.topPinRow[3]),(255,0,255),3)
-		elif zone == "Bot Pins":
-			cv2.rectangle(rawCopy,(self.botPinRow[0],self.botPinRow[1]),(self.botPinRow[2],self.botPinRow[3]),(255,0,255),3)
-		
-		topBin = self.cropROI(self.topPinRow,binaryPin)
-		botBin = self.cropROI(self.botPinRow,binaryPin)
-
-		topRaw = self.cropROI(self.topPinRow,rawCopy)
-		botRaw = self.cropROI(self.botPinRow,rawCopy)
-		
-		self.drawTopContours(topBin,topRaw)
-		self.drawBotContours(botBin,botRaw)
-		
-		
-		if zone is None:
-			raw = self.addROIRectangles(raw)
-			cv2.imshow('Main',raw)
-		else:
-			topBin = self.cropROI(self.topPinRow,binaryPin)
-			botBin = self.cropROI(self.botPinRow,binaryPin)
-			topRaw = self.cropROI(self.topPinRow,rawCopy)
-			botRaw = self.cropROI(self.botPinRow,rawCopy)
-		
-			self.drawTopContours(topBin,topRaw)
-			self.drawBotContours(botBin,botRaw)
-			cv2.imshow('Main', rawCopy)
-			#cv2.imshow('bin', binaryPin)
-		cv2.waitKey(5)
-
 	def displayBasicView(self):
 		raw_img,binaryPin, binaryLetter = self.captureBinarizePinsAndLettering()
 		
