@@ -1,5 +1,5 @@
-#import sys
-#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+import sys
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -8,6 +8,7 @@ from scipy.stats import linregress
 import csv
 from imutils.video import WebcamVideoStream
 import imutils
+
 
 class ImageTaker(object):
 
@@ -25,7 +26,12 @@ class ImageTaker(object):
 		self.BLPinZone = (60, 350, 100, 419)
 		self.URPinZone =(470, 10, 520, 80)
 
+		self.raw = np.float32()
+		self.binaryPin = np.float32()
+		self.binaryLettering= np.float32()
 
+	#updates stored images within object
+	#3 images stored, raw, binary for the pins, and binary for the lettering
 	def captureBinarizePinsAndLettering(self):
 		#colored image
 		img = self.cap.read()
@@ -35,18 +41,20 @@ class ImageTaker(object):
 		
 		#application of gaussian filter for otsu thresholding
 		blur = cv2.GaussianBlur(gray_raw,(5,5),0)
+
 		ret1,th1 =cv2.threshold(blur,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
+
 		ret2,th2 = cv2.threshold(blur,self.thresholdLetter,255,cv2.THRESH_BINARY)
-	
 		binaryLettering = np.float32(th2)
+
 		self.raw = img
 		self.binaryPin = binaryPin
 		self.binaryLettering  = binaryLettering
 
-
 	def cropROI(self, ROI,img):
-		return img[ROI[1]:ROI[3],ROI[0]:ROI[2]]		
+		return img[ROI[1]:ROI[3],ROI[0]:ROI[2]]	
+	
 	def cropOutAllZonesinColor(self):
 		self.main = self.cropROI(self.mainZone,self.raw)
 

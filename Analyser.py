@@ -127,21 +127,26 @@ class Analyser(object):
 				return False
 		return True
 	
+
 	def topCornersUsingContour(self,bw_img):
 		contourBoxes = self.findContourBoxes(bw_img)
 		topCorners = []
-		top2Indexes = np.argpartition(box[:, 1], 2)[:2]
-		for corner in top2Indexes:
-			topCorners.append(box[corner])
+		for box in contourBoxes:
+			top2Indexes = np.argpartition(box[:, 1], 2)[:2]
+			for corner in top2Indexes:
+				topCorners.append(box[corner])
 		return topCorners
+
 
 	def botCornersUsingContour(self,bw_img):
 		contourBoxes = self.findContourBoxes(bw_img)
 		botCorners = []
-		bot2Indexes = np.argpartition(box[:, 1], 2)[-2:]
-		for corner in bot2Indexes:
-			botCorners.append(box[corner])
+		for box in contourBoxes:
+			bot2Indexes = np.argpartition(box[:, 1], 2)[-2:]
+			for corner in bot2Indexes:
+				botCorners.append(box[corner])
 		return botCorners
+
 
 	def findContourBoxes(self,bw_img):
 		bw_img = np.uint8(bw_img)
@@ -188,6 +193,7 @@ class Analyser(object):
 		top20 = top20[sortInd]
 
 		return top20
+
 if __name__ == "__main__":
 	print("starting camera")
 	foo = WebcamVideoStream(src = 0).start()

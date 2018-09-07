@@ -2,7 +2,7 @@ import sys
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 from ImageTaker import ImageTaker
-
+from Analyser import Analyser
 
 	
 class DisplayManager(object):
@@ -10,7 +10,7 @@ class DisplayManager(object):
 		self.cam = cam
 
 	def printROI(self):
-		r = cv2.selectROI(raw_img)
+		r = cv2.selectROI(self.cam.raw)
 		#print(r)
 		x1 = r[0]
 		y1 = r[1]
@@ -18,7 +18,6 @@ class DisplayManager(object):
 		y2 = r[1] +r[3]
 		print(x1,y1,x2,y2)
 		print(y1,y2, x1,x2)
-		#imCrop = binary[int(y1):int(y2), int(x1):int(x2)]
 		#print(imCrop.mean())
 
 	def addROIRectangles(self,img):
@@ -60,9 +59,12 @@ class DisplayManager(object):
 
 	def drawErrorRectangleOverROI(self,ROI,img):
 		cv2.rectangle(img,(ROI[0],ROI[1]),(ROI[2],ROI[3]),(0,0,255),3)
+
 	def displayBinary(self):
 		bw_img = self.cam.binaryPin.copy()
 		cv2.imshow('Binary', bw_img)
+	def drawContourBoxes(self):
+		pass
 if __name__ == "__main__":
 	print("starting camera")
 	foo = ImageTaker()
