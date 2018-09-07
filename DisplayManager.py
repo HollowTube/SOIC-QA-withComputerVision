@@ -88,6 +88,8 @@ if __name__ == "__main__":
 	while True:
 		cam.captureBinarizePinsAndLettering()
 		cam.cropOutAllZonesinColor()
+		cam.cropOutPinZonesinBlackandWhite()
+		cam.cropOutLetteringinBlackandWhite()
 		display.displayDebugInformation()
 		#raw = display.addROIRectangles()
 		display.displayDebugInformation()
