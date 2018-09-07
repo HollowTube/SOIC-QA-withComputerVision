@@ -8,6 +8,7 @@ from Analyser import Analyser
 class DisplayManager(object):
 	def __init__(self,cam):
 		self.cam = cam
+		self.Analyser = Analyser()
 
 	def printROI(self):
 		r = cv2.selectROI(self.cam.raw)
@@ -63,9 +64,17 @@ class DisplayManager(object):
 	def displayBinary(self):
 		bw_img = self.cam.binaryPin.copy()
 		cv2.imshow('Binary', bw_img)
-	def drawContourBoxes(self,img):
+	def drawContourBoxes(self,contours,img):
+
 		
 		pass
+	def showDebugWindows(self):
+			cv2.imshow('Pin',binaryPin)
+			cv2.moveWindow('Pin',0,512)
+			cv2.imshow('Marking',binaryLetters)
+			cv2.moveWindow('Marking',640,512)
+		pass
+
 if __name__ == "__main__":
 	print("starting camera")
 	foo = ImageTaker()

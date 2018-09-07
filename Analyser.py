@@ -9,15 +9,16 @@ from scipy.stats import linregress
 
 class Analyser(object):
 	#Pin spacing parameters
-	self.maxPinDist = 50
-	self.minPinDist = 43
-	
-	#ROIs in the format of (x1,y1,x2,y2)
-	self.topPinRow = (30, 10, 540, 150)
-	self.botPinRow = (30, 350, 540, 440)
-	self.centerLettering = (297, 259, 459, 323)
-	self.BLPin = (60, 350, 100, 419)
-	self.URPin =(470, 10, 520, 80)
+	def __init__(self):
+		self.maxPinDist = 50
+		self.minPinDist = 43
+		
+		#ROIs in the format of (x1,y1,x2,y2)
+		self.topPinRow = (30, 10, 540, 150)
+		self.botPinRow = (30, 350, 540, 440)
+		self.centerLettering = (297, 259, 459, 323)
+		self.BLPin = (60, 350, 100, 419)
+		self.URPin =(470, 10, 520, 80)
 
 	def fullScan(self):
 		raw,binaryPin, binaryLetters = self.captureBinarizePinsAndLettering()
@@ -47,7 +48,7 @@ class Analyser(object):
 		print("Test result: PASSED")
 		print("----------------")
 		print
-		self.displayDebug()
+		#self.displayDebug()
 		return True
 
 	def checkPin(self,topPins,botPins):
@@ -56,33 +57,33 @@ class Analyser(object):
 		cornersTop = self.getTop20(cornersTop)
 		if cornersTop is []:
 			print("Top pins missing")
-			self.displayDebug(zone = "Top Pins")
+			#self.displayDebug(zone = "Top Pins")
 			return False
 
 		cornersBot = self.botCornersUsingContour(botPins)
 		cornersBot = self.getBot20(cornersBot)
 		if cornersBot is []:
 			print("Bot pins missing")
-			self.displayDebug(zone = "Bot Pins")
+			#self.displayDebug(zone = "Bot Pins")
 			return False
 
 		if self.checkLinearity(cornersTop) is False:
 			print("Top pins not aligned")
-			self.displayDebug(zone = "Top Pins")
+			#self.displayDebug(zone = "Top Pins")
 			return False
 
 		if self.checkLinearity(cornersBot) is False:
 			print("Bot pins not aligned")
-			self.displayDebug(zone = "Bot Pins")
+			#self.displayDebug(zone = "Bot Pins")
 			return False
 
 		if self.checkSpacing(cornersTop) is False:
 			print("Top spacing off")
-			self.displayDebug(zone = "Top Pins")
+			#self.displayDebug(zone = "Top Pins")
 			return False
 		if self.checkSpacing(cornersBot) is False:
 			print("Bot spacing off")
-			self.displayDebug(zone = "Bot Pins")
+			#self.displayDebug(zone = "Bot Pins")
 			return False
 		return True
 
@@ -104,7 +105,7 @@ class Analyser(object):
 		x,y  = np.hsplit(arr,2)
 		x = np.ravel(x)
 		y = np.ravel(y)
-		m,c,rValue,pValue = linregress(x,y)[:4]
+		m,c = linregress(x,y)[:2]
 		error = np.absolute(y-(m*x + c))
 		for iterator in range (0,len(error)):
 			if error[iterator] > 3:
@@ -113,9 +114,6 @@ class Analyser(object):
 				print("Error CHECK PIN {0}".format(iterator//2))
 		if max(error) >  3:
 			return False
-		
-		#print("Pvalue: ",pValue)
-		#print("R-Value: ", rValue)
 
 	def checkSpacing(self,corners):
 		error = []
@@ -126,7 +124,6 @@ class Analyser(object):
 			if(dist > self.maxPinDist or dist < self.minPinDist):
 				return False
 		return True
-	
 
 	def topCornersUsingContour(self,bw_img):
 		contourBoxes = self.findContourBoxes(bw_img)
@@ -165,43 +162,11 @@ class Analyser(object):
 
 		"""preprocessing array"""
 		arr= np.array(corners)
-		if arr.shape[0] < 20:
-			return []
-		arr = arr.reshape(arr.shape[0],2)
-
-		"""getting to the twenty"""
-		bot20Indices = np.argpartition(arr[:, 1], arr.shape[0]-20)[-20:]
-		bot20 = arr[bot20Indices[0]]
-		for foo in bot20Indices[1:]:
-			bot20 = np.vstack((bot20,arr[foo]))
-		sortInd = np.lexsort((bot20[:,1],bot20[:,0]))
-		bot20 = bot20[sortInd]
-
-		return bot20
-
-	def getTop20(self,corners):
-		arr= np.array(corners)
-		if arr.shape[0] < 20:
-			return []
-		arr = arr.reshape(arr.shape[0],2)
-		top20Indices = np.argpartition(arr[:, 1], 20)[:20]
-
-		top20 = arr[top20Indices[0]]
-		for foo in top20Indices[1:]:
-			top20 = np.vstack((top20,arr[foo]))
-		sortInd = np.lexsort((top20[:,1],top20[:,0]))
-		top20 = top20[sortInd]
-
-		return top20
-	def getBot20(self,corners):
-
-		"""preprocessing array"""
-		arr= np.array(corners)
 		# Check the number of shape
 		if arr.shape[0] < 40:
 			return []
-		arr = arr.reshape(arr.shape[0],2)
 
+		arr = arr.reshape(arr.shape[0],2)
 		sortIndByX = np.lexsort((arr[:,1],arr[:,0]))
 		sortedByX = arr[sortIndByX]
 		bot20 = []
@@ -257,8 +222,7 @@ if __name__ == "__main__":
 	print("starting camera")
 	foo = WebcamVideoStream(src = 0).start()
 	print("starting Display")
-	display = DisplayThread()
-	display.start()
+
 	while True:
 		if display.showimage:
 			img = foo.read()

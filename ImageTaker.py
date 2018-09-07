@@ -69,16 +69,16 @@ class ImageTaker(object):
 	def cropOutPinZonesinBlackandWhite(self):
 		mainBin = self.cropROI(self.mainZone,self.binaryPin)
 
-		topPinRowBin = self.cropROI(self.topPinRowZone,self.main) 
-		botPinRowBin = self.cropROI(self.botPinRowZone,self.main)
-		BLPinBin = self.cropROI(self.BLPinZone,self.main)
-		URPinBin = self.cropROI(self.URPinZone,self.main)
-		return topPinRowBin,botPinRowBin,BLPinBIn,URPinBin 
+		self.topPinRowBin = self.cropROI(self.topPinRowZone,mainBin) 
+		self.botPinRowBin = self.cropROI(self.botPinRowZone,mainBin)
+		self.BLPinBin = self.cropROI(self.BLPinZone,mainBin)
+		self.URPinBin = self.cropROI(self.URPinZone,mainBin)
+		return self.topPinRowBin,self.botPinRowBin,self.BLPinBin,self.URPinBin 
 
 	def cropOutLetteringinBlackandWhite(self):
-		main = self.cropROI(self.mainZone,self.binaryPin)
-		centerLetteringBin = self.cropROI(self.centerLetteringZone,self.main)
-		return centerLetterBin
+		main = self.cropROI(self.mainZone,self.binaryLettering)
+		self.centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
+		return self.centerLetteringBin
 
 	def addROIRectangles(self):
 		img = self.main
