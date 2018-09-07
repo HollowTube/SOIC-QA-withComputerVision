@@ -8,7 +8,7 @@ from Analyser import Analyser
 class DisplayManager(object):
 	def __init__(self,cam):
 		self.cam = cam
-		self.Analyser = Analyser()
+		self.Analyser = Analyser(cam)
 
 	def printROI(self):
 		r = cv2.selectROI(self.cam.raw)
@@ -19,7 +19,6 @@ class DisplayManager(object):
 		y2 = r[1] +r[3]
 		print(x1,y1,x2,y2)
 		print(y1,y2, x1,x2)
-		#print(imCrop.mean())
 
 	def addROIRectangles(self,img):
 		main = self.cam.cropROI(self.cam.mainZone,img)
@@ -40,19 +39,20 @@ class DisplayManager(object):
 			self.drawErrorRectangleOverROI(self.cam.centerLetteringZone,mainCopy)
 			self.drawErrorRectangleOverROI(self.cam.centerLetteringZone,mainCopy)
 		elif zone == "Top Pins":
-			self.drawErrorRectangleOverROI(self.cam.topPinRowZone,mainCopy)
-		
+			self.drawErrorRectangleOverROI(self.cam.topPinRowZone,mainCopy)	
 		elif zone == "Bot Pins":
 			self.drawErrorRectangleOverROI(self.cam.botPinRowZone,mainCopy)
- 
+
 		if zone is None:
 			cv2.imshow('Viewer',self.cam.raw)
 		else:
 			cv2.imshow('Error',Copy)
 		cv2.waitKey(1)
-	def displayDebug(self):
+
+	def displayDebugInformation(self):
 		img = self.cam.raw.copy()
 		self.addROIRectangles(img)
+		self.drawContourBoxes(img)
 		cv2.imshow('Debug',img)		
 
 	def drawRectangleOverROI(self,ROI,img):
@@ -64,35 +64,35 @@ class DisplayManager(object):
 	def displayBinary(self):
 		bw_img = self.cam.binaryPin.copy()
 		cv2.imshow('Binary', bw_img)
-	def drawContourBoxes(self,contours,img):
 
+	def drawContourBoxes(self,img):
+		topBoxes = self.Analyser.findContourBoxes(self.cam.topPinRowBin)
+		botBoxes = self.Analyser.findContourBoxes(self.cam.botPinRowBin)
+		for box in topBoxes:
+			cv2.drawContours(self.cam.raw,[box],0,(0,0,255),2)
+		for box in botBoxes:
+			cv2.drawContours(self.cam.raw,[box],0,(0,0,255),2)
 		
-		pass
 	def showDebugWindows(self):
-			cv2.imshow('Pin',binaryPin)
+			cv2.imshow('Pin',self.cam.binaryPin)
 			cv2.moveWindow('Pin',0,512)
-			cv2.imshow('Marking',binaryLetters)
+			cv2.imshow('Marking',self.cam.binaryLetters)
 			cv2.moveWindow('Marking',640,512)
-		pass
+			self.displayDebugInformation()
 
 if __name__ == "__main__":
 	print("starting camera")
-	foo = ImageTaker()
-	display = DisplayManager(foo)
+	cam = ImageTaker()
+	display = DisplayManager(cam)
 	print("starting Display")
 	while True:
-		foo.captureBinarizePinsAndLettering()
-		foo.cropOutAllZonesinColor()
+		cam.captureBinarizePinsAndLettering()
+		cam.cropOutAllZonesinColor()
+		display.displayDebugInformation()
 		#raw = display.addROIRectangles()
-		display.displayDebug()
+		display.displayDebugInformation()
 		display.displayBinary()
-		#raw = foo.raw
-		cropped = foo.main
-		cropcrop = foo.topPinRow
-		#cv2.imshow('rectangle',raw)
-		cv2.imshow('raw',foo.raw)
-		#cv2.imshow('crop of crop', cropcrop)
 		cv2.waitKey(1)
 
-	foo.cap.stream.release()
+	cam.cap.stream.release()
 	cv2.destroyAllWindows()

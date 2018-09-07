@@ -9,7 +9,7 @@ from scipy.stats import linregress
 
 class Analyser(object):
 	#Pin spacing parameters
-	def __init__(self):
+	def __init__(self,cam):
 		self.maxPinDist = 50
 		self.minPinDist = 43
 		
@@ -19,6 +19,8 @@ class Analyser(object):
 		self.centerLettering = (297, 259, 459, 323)
 		self.BLPin = (60, 350, 100, 419)
 		self.URPin =(470, 10, 520, 80)
+
+		self.cam = cam
 
 	def fullScan(self):
 		raw,binaryPin, binaryLetters = self.captureBinarizePinsAndLettering()
