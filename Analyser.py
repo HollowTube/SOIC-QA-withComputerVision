@@ -193,7 +193,66 @@ class Analyser(object):
 		top20 = top20[sortInd]
 
 		return top20
+	def getBot20(self,corners):
 
+		"""preprocessing array"""
+		arr= np.array(corners)
+		# Check the number of shape
+		if arr.shape[0] < 40:
+			return []
+		arr = arr.reshape(arr.shape[0],2)
+
+		sortIndByX = np.lexsort((arr[:,1],arr[:,0]))
+		sortedByX = arr[sortIndByX]
+		bot20 = []
+
+		#collecting corners into packets of 4 and taking the bottom 2
+		for foo in range(0,10):
+			#grouping into 4
+			packet = [sortedByX[foo*4],sortedByX[foo*4+1],sortedByX[foo*4+2],sortedByX[foo*4+3]]
+			packet = np.array(packet)	
+			
+			#getting the bottom indices
+			bot2Ind = np.lexsort((packet[:,0],packet[:,1]))[2:]
+
+			#appending to array
+			bot20.append(packet[bot2Ind[0]])
+			bot20.append(packet[bot2Ind[1]])
+
+		bot20 = np.array(bot20)
+		finalSortIndbyX = np.lexsort((bot20[:,1],bot20[:,0]))
+
+		finalBot = bot20[finalSortIndbyX]
+		
+		return finalBot
+
+	def getTop20(self,corners):
+		arr= np.array(corners)
+		#print(arr.shape)
+		if arr.shape[0] < 40:
+			return []
+		arr = arr.reshape(arr.shape[0],2)
+
+		sortInd = np.lexsort((arr[:,1],arr[:,0]))
+		top20 = arr[sortInd]
+
+		finalTop = []
+		for foo in range(0,10):
+			packet = [top20[foo*4],top20[foo*4+1],top20[foo*4+2],top20[foo*4+3]]
+			packet = np.array(packet)
+			#print(packet)	
+			top2Ind = np.lexsort((packet[:,0],packet[:,1]))[:-2]
+			#print(packet[top2Ind])
+			finalTop.append(packet[top2Ind[0]])
+			finalTop.append(packet[top2Ind[1]])
+		#print("top")
+		finalTop = np.array(finalTop)
+		sortInd = np.lexsort((finalTop[:,1],finalTop[:,0]))
+		finalTop = finalTop[sortInd]
+		#print(finalTop)
+		#print(finalTop.shape)
+		
+		return finalTop
 if __name__ == "__main__":
 	print("starting camera")
 	foo = WebcamVideoStream(src = 0).start()
