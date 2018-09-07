@@ -23,7 +23,11 @@ class Analyser(object):
 		self.cam = cam
 
 	def fullScan(self):
-		raw,binaryPin, binaryLetters = self.captureBinarizePinsAndLettering()
+
+		self.cam.captureBinarizePinsAndLettering()
+		self.cam.cropOutPinZonesinBlackandWhite()
+		self.cam.cropOutLetteringinBlackandWhite()
+		
 		topBin = self.cropROI(self.topPinRow,binaryPin)
 		botBin = self.cropROI(self.botPinRow,binaryPin)
 		if  self.checkFlip(binaryLetters) is False:
@@ -41,8 +45,6 @@ class Analyser(object):
 			return False
 		
 		if self.checkPin(topBin,botBin) is False:
-
-
 			print("Test result: FAILED")
 			
 			return False
@@ -89,19 +91,14 @@ class Analyser(object):
 			return False
 		return True
 
-	def checkFlip(self,img):
-		roi =  img[self.centerLettering[1]:self.centerLettering[3],self.centerLettering[0]:self.centerLettering[2]]
-		if (roi.mean()>30):
-			return True
-		else:
-			return False
+	def checkFlip(self):
+		roi =  cam.centerLetteringBin
+		return roi.mean()>30
 
-	def checkOutOfTray(self,img):
-		BL = img[self.BLPin[1]:self.BLPin[3],self.BLPin[0]:self.BLPin[2]]
-		UR =  img[self.URPin[1]:self.URPin[3],self.URPin[0]:self.URPin[2]]
+	def checkOutOfTray(self):
+		BL = self.cam.BLPinBin
+		UR =  self.cam.URPinBin
 		return BL.mean()>10 and UR.mean()>10
-
-
 
 	def checkLinearity(self,arr):	
 		x,y  = np.hsplit(arr,2)
@@ -111,7 +108,6 @@ class Analyser(object):
 		error = np.absolute(y-(m*x + c))
 		for iterator in range (0,len(error)):
 			if error[iterator] > 3:
-				#print ("Absolute error array", error)
 				print("error", error[iterator])
 				print("Error CHECK PIN {0}".format(iterator//2))
 		if max(error) >  3:

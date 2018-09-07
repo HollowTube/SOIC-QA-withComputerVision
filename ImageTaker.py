@@ -1,5 +1,5 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -15,7 +15,7 @@ class ImageTaker(object):
 	def __init__(self):
 		self.cap = WebcamVideoStream(src=0).start()
 
-		self.thresholdPin = 198
+		self.thresholdPin = 200
 		self.thresholdLetter = 180
 	
 		#ROIs in the format of (x1,y1,x2,y2)
@@ -25,7 +25,6 @@ class ImageTaker(object):
 		self.centerLetteringZone = (297, 259, 459, 323)
 		self.BLPinZone = (60, 350, 100, 419)
 		self.URPinZone =(470, 10, 520, 80)
-
 		
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
@@ -52,6 +51,7 @@ class ImageTaker(object):
 		self.raw = img
 		self.binaryPin = binaryPin
 		self.binaryLettering  = binaryLettering
+		return img,binaryPin,binaryLettering
 
 	def cropROI(self, ROI,img):
 		return img[ROI[1]:ROI[3],ROI[0]:ROI[2]]	
