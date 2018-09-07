@@ -1,5 +1,5 @@
 import sys
-#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -79,16 +79,6 @@ class ImageTaker(object):
 		main = self.cropROI(self.mainZone,self.binaryLettering)
 		self.centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
 		return self.centerLetteringBin
-
-	def addROIRectangles(self):
-		img = self.main
-		cv2.rectangle(self.raw,(self.mainZone[0],self.mainZone[1]),(self.mainZone[2],self.mainZone[3]),(255,255,0),3)
-		cv2.rectangle(img,(self.topPinRowZone[0],self.topPinRowZone[1]),(self.topPinRowZone[2],self.topPinRowZone[3]),(0,255,0),3)
-		cv2.rectangle(img,(self.botPinRowZone[0],self.botPinRowZone[1]),(self.botPinRowZone[2],self.botPinRowZone[3]),(0,255,0),3)
-		cv2.rectangle(img,(self.centerLetteringZone[0],self.centerLetteringZone[1]),(self.centerLetteringZone[2],self.centerLetteringZone[3]),(0,255,0),3)
-		cv2.rectangle(img,(self.BLPinZone[0],self.BLPinZone[1]),(self.BLPinZone[2],self.BLPinZone[3]),(0,255,0),3)
-		cv2.rectangle(img,(self.URPinZone[0],self.URPinZone[1]),(self.URPinZone[2],self.URPinZone[3]),(0,255,0),3)
-		return img
 
 if __name__ == "__main__":
 	print("starting camera")

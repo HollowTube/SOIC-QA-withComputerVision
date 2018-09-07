@@ -13,6 +13,7 @@ class Analyser(object):
 		self.maxPinDist = 50
 		self.minPinDist = 43
 		
+		
 		#ROIs in the format of (x1,y1,x2,y2)
 		self.topPinRow = (30, 10, 540, 150)
 		self.botPinRow = (30, 350, 540, 440)
@@ -31,6 +32,7 @@ class Analyser(object):
 		binaryPin = self.cam.binaryPin
 		topBin = self.cam.topPinRow
 		botBin = self.cam.botPinRow
+
 		if  self.checkFlip() is False:
 			print("No chip detected or flipped chip")
 		
@@ -38,7 +40,6 @@ class Analyser(object):
 			#self.displayDebug(zone = "Missing")
 			return False
 	
-
 		if self.checkOutOfTray() is False:
 			print("Chip out of Tray")
 			print("Test result: FAILED")
@@ -47,7 +48,6 @@ class Analyser(object):
 		
 		if self.checkPin(topBin,botBin) is False:
 			print("Test result: FAILED")
-			
 			return False
 		
 		print("Test result: PASSED")
