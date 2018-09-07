@@ -47,7 +47,7 @@ class DisplayManager(object):
 		if zone is None:
 			cv2.imshow('Viewer',self.cam.raw)
 		else:
-			cv2.imshow('Error',Copy)
+			cv2.imshow('Error',img)
 		cv2.waitKey(1)
 
 

@@ -27,21 +27,22 @@ class Analyser(object):
 		self.cam.captureBinarizePinsAndLettering()
 		self.cam.cropOutPinZonesinBlackandWhite()
 		self.cam.cropOutLetteringinBlackandWhite()
-		
-		topBin = self.cropROI(self.topPinRow,binaryPin)
-		botBin = self.cropROI(self.botPinRow,binaryPin)
-		if  self.checkFlip(binaryLetters) is False:
+		binaryLetters = self.cam.binaryLetters
+		binaryPin = self.cam.binaryPin
+		topBin = self.cam.topPinRow
+		botBin = self.cam.botPinRow
+		if  self.checkFlip() is False:
 			print("No chip detected or flipped chip")
 		
 			print("Test result: FAILED")
-			self.displayDebug(zone = "Missing")
+			#self.displayDebug(zone = "Missing")
 			return False
 	
 
-		if self.checkOutOfTray(binaryLetters) is False:
+		if self.checkOutOfTray() is False:
 			print("Chip out of Tray")
 			print("Test result: FAILED")
-			self.displayDebug(zone = "Out of Tray")
+			#self.displayDebug(zone = "Out of Tray")
 			return False
 		
 		if self.checkPin(topBin,botBin) is False:
@@ -92,7 +93,7 @@ class Analyser(object):
 		return True
 
 	def checkFlip(self):
-		roi =  cam.centerLetteringBin
+		roi =  self.cam.centerLetteringBin
 		return roi.mean()>30
 
 	def checkOutOfTray(self):
