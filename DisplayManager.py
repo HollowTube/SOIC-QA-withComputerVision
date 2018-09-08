@@ -68,12 +68,16 @@ class DisplayManager(object):
 		cv2.imshow('Binary', bw_img)
 
 	def drawContourBoxes(self,img):
+		
 
-		topBoxes = self.Analyser.findContourBoxes(self.cam.topPinRowBin)
-		botBoxes = self.Analyser.findContourBoxes(self.cam.botPinRowBin)
+		topPinRow = self.cam.currentImageSet['topPinRowBin']
+		botPinRow = self.cam.currentImageSet['botPinRowBin']
 
-		topCropped = cam.cropROI(self.cam.topPinRowZone,img)
-		botCropped = cam.cropROI(self.cam.botPinRowZone,img)
+		topBoxes = self.Analyser.findContourBoxes(topPinRow)
+		botBoxes = self.Analyser.findContourBoxes(botPinRow)
+
+		topCropped = self.cam.cropROI(self.cam.topPinRowZone,img)
+		botCropped = self.cam.cropROI(self.cam.botPinRowZone,img)
 
 		for box in topBoxes:
 			cv2.drawContours(topCropped,[box],0,(0,0,255),2)
@@ -86,6 +90,8 @@ class DisplayManager(object):
 			cv2.imshow('Marking',self.cam.binaryLettering)
 			cv2.moveWindow('Marking',640,512)
 			self.displayDebugInformation()
+	def displayRaw(self):
+		cv2.imshow('Raw',cam.raw.copy())
 
 if __name__ == "__main__":
 	print("starting camera")
@@ -93,14 +99,25 @@ if __name__ == "__main__":
 	display = DisplayManager(cam)
 	print("starting Display")
 	while True:
-		cam.captureBinarizePinsAndLettering()
-		cam.cropOutAllZonesinColor()
-		cam.cropOutPinZonesinBlackandWhite()
-		cam.cropOutLetteringinBlackandWhite()
+		currentSet = cam.getNewImageSet()
 
-		cv2.imshow('raw', cam.raw)
-		display.showDebugWindows()
+		#cv2.imshow('raw', cam.raw)
 		display.displayBinary()
+		centerLettering = currentSet['centerLetteringBin']
+		URPin = currentSet['URPinBin']
+		BLPin = currentSet['BLPinBin']
+
+		pinsBot = currentSet['botPinRowBin']
+		pinsTop = currentSet['topPinRowBin']
+			
+		#cv2.imshow('center',centerLettering )
+		#cv2.imshow('top', pinsTop)
+		#cv2.imshow('bot', pinsBot)
+		#cv2.imshow('UR', URPin)
+		
+		#cv2.imshow('BL', BLPin)
+
+		display.showDebugWindows()
 		cv2.waitKey(1)
 
 	cam.cap.stream.release()

@@ -1,5 +1,5 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -83,12 +83,12 @@ class ImageTaker(object):
 
 	def getNewImageSet(self):
 		self.captureBinarizePinsAndLettering()
-		imageSet = self.makeImageSet()
-		return imageSet
+		self.currentImageSet = self.makeImageSet()
+		return self.currentImageSet
 
 	def makeImageSet(self):
-		topPinRowBin,botPinRowBin,BLPinBin,URPinBin  = self.cropOutLetteringinBlackandWhite()
-		centerLetteringBin = self.cropOutPinZonesinBlackandWhite()
+		topPinRowBin,botPinRowBin,BLPinBin,URPinBin  = self.cropOutPinZonesinBlackandWhite()
+		centerLetteringBin = self.cropOutLetteringinBlackandWhite()
 		imageSet = {}
 		imageSet['topPinRowBin'] = 	topPinRowBin
 		imageSet['botPinRowBin'] = 	botPinRowBin
@@ -103,9 +103,12 @@ class ImageTaker(object):
 		
 if __name__ == "__main__":
 	print("starting camera")
-	foo = ImageTaker()
+	cam = ImageTaker()
 	print("starting Display")
+	display = DisplayManager(cam)
 	while True:
+		cam.getNewImageSet()
+		
 		pass
 	foo.cap.stream.release()
 	cv2.destroyAllWindows()
