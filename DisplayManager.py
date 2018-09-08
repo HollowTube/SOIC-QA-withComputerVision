@@ -43,7 +43,6 @@ class DisplayManager(object):
 		elif zone == "Bot Pins":
 			self.drawErrorRectangleOverROI(self.cam.botPinRowZone,mainCopy)
 
-
 		if zone is None:
 			cv2.imshow('Viewer',self.cam.raw)
 		else:

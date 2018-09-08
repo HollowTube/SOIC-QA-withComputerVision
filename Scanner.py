@@ -2,6 +2,8 @@
 import cv2	
 from Analyser import Analyser
 from ImageTaker import ImageTaker
+from DisplayManager import DisplayManager
+
 
 
 class Scanner(object):
@@ -13,28 +15,28 @@ class Scanner(object):
 	
 		
 	def fullScan(self):
-		self.cam.captureBinarizePinsAndLettering()
-		self.cam.cropOutPinZonesinBlackandWhite()
-		self.cam.cropOutLetteringinBlackandWhite()
+		self.currentSet = self.cam.getNewImageSet()
 
-		binaryLetters = self.cam.binaryLetters
-		binaryPin = self.cam.binaryPin
-		topBin = self.cam.topPinRow
-		botBin = self.cam.botPinRow
+		centerLettering = self.currentSet['centerLetteringBin']
+		URPin = self.currentSet['URPinBin']
+		BLPin = self.currentSet['BLPinBin']
 
-		if  self.analyser.checkFlip() is False:
+		pinsBot = self.currentSet['centerLetteringBin']
+		pinsTop = self.currentSet['centerLetteringBin']
+
+		if  self.analyser.checkFlip(centerLettering) is False:
 			print("No chip detected or flipped chip")
 			print("Test result: FAILED")
 			#self.displayDebug(zone = "Missing")
 			return False
 	
-		if self.analyser.checkOutOfTray() is False:
+		if self.analyser.checkOutOfTray(URPin,BLPin) is False:
 			print("Chip out of Tray")
 			print("Test result: FAILED")
 			#self.displayDebug(zone = "Out of Tray")
 			return False
 		
-		if self.checkPin(topBin,botBin) is False:
+		if self.checkPin(pinsTop,pinsBot) is False:
 			print("Test result: FAILED")
 			return False
 		
@@ -44,9 +46,7 @@ class Scanner(object):
 		#self.displayDebug()
 		return True
 
-	def checkPin(self):
-		topPins = self.cam.topPinRow
-		botPins = self.cam.botPinRow
+	def checkPin(self,topPins,botPins):
 
 		cornersTop = self.analyser.topCornersUsingContour(topPins)
 		cornersTop = self.analyser.getTop20(cornersTop)
@@ -55,8 +55,8 @@ class Scanner(object):
 			#self.displayDebug(zone = "Top Pins")
 			return False
 
-		cornersBot = self.botCornersUsingContour(botPins)
-		cornersBot = self.getBot20(cornersBot)
+		cornersBot = self.analyser.botCornersUsingContour(botPins)
+		cornersBot = self.analyser.getBot20(cornersBot)
 		if cornersBot is []:
 			print("Bot pins missing")
 			#self.displayDebug(zone = "Bot Pins")

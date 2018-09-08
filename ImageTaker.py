@@ -63,41 +63,49 @@ class ImageTaker(object):
 
 		self.topPinRow = self.cropROI(self.topPinRowZone,self.main) 
 		self.botPinRow = self.cropROI(self.botPinRowZone,self.main)
-
 		self.centerLettering = self.cropROI(self.centerLetteringZone,self.main)
 		self.BLPin = self.cropROI(self.BLPinZone,self.main)
 		self.URPin = self.cropROI(self.URPinZone,self.main) 
 
 	def cropOutPinZonesinBlackandWhite(self):
-		mainBin = self.cropROI(self.mainZone,self.binaryPin)
+		mainBin = self.cropROI(self.mainZone,self.binaryPin.copy())
 
-		self.topPinRowBin = self.cropROI(self.topPinRowZone,mainBin) 
-		self.botPinRowBin = self.cropROI(self.botPinRowZone,mainBin)
-		self.BLPinBin = self.cropROI(self.BLPinZone,mainBin)
-		self.URPinBin = self.cropROI(self.URPinZone,mainBin)
-		return self.topPinRowBin,self.botPinRowBin,self.BLPinBin,self.URPinBin 
+		topPinRowBin = self.cropROI(self.topPinRowZone,mainBin) 
+		botPinRowBin = self.cropROI(self.botPinRowZone,mainBin)
+		BLPinBin = self.cropROI(self.BLPinZone,mainBin)
+		URPinBin = self.cropROI(self.URPinZone,mainBin)
+		return topPinRowBin,botPinRowBin,BLPinBin,URPinBin 
 
 	def cropOutLetteringinBlackandWhite(self):
-		main = self.cropROI(self.mainZone,self.binaryLettering)
-		self.centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
-		return self.centerLetteringBin
+		main = self.cropROI(self.mainZone,self.binaryLettering.copy())
+		centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
+		return centerLetteringBin
 
+	def getNewImageSet(self):
+		self.captureBinarizePinsAndLettering()
+		imageSet = self.makeImageSet()
+		return imageSet
 
+	def makeImageSet(self):
+		topPinRowBin,botPinRowBin,BLPinBin,URPinBin  = self.cropOutLetteringinBlackandWhite()
+		centerLetteringBin = self.cropOutPinZonesinBlackandWhite()
+		imageSet = {}
+		imageSet['topPinRowBin'] = 	topPinRowBin
+		imageSet['botPinRowBin'] = 	botPinRowBin
+		imageSet['BLPinBin'] = 	BLPinBin
+		imageSet['URPinBin'] = 	URPinBin
+		imageSet['centerLetteringBin'] = centerLetteringBin
+		return imageSet
+
+	def getCopyOfImageSet(self):
+		imageSet = self.makeImageSet()
+		return imageSet
+		
 if __name__ == "__main__":
 	print("starting camera")
 	foo = ImageTaker()
 	print("starting Display")
 	while True:
-		foo.captureBinarizePinsAndLettering()
-		foo.cropOutAllZonesinColor()
-		foo.addROIRectangles()
-		raw = foo.raw
-		cropped = foo.main
-		cropcrop = foo.topPinRow
-		cv2.imshow('raw',raw)
-		cv2.imshow('crop',cropped)
-		cv2.imshow('crop of crop', cropcrop)
-		cv2.waitKey(1)
-	
+		pass
 	foo.cap.stream.release()
 	cv2.destroyAllWindows()

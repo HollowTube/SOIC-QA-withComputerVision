@@ -6,99 +6,18 @@ import time
 import math
 from scipy.stats import linregress
 
-
 class Analyser(object):
 	#Pin spacing parameters
 	def __init__(self,cam):
 		self.maxPinDist = 50
 		self.minPinDist = 43
-		
-		
-		#ROIs in the format of (x1,y1,x2,y2)
-		self.topPinRow = (30, 10, 540, 150)
-		self.botPinRow = (30, 350, 540, 440)
-		self.centerLettering = (297, 259, 459, 323)
-		self.BLPin = (60, 350, 100, 419)
-		self.URPin =(470, 10, 520, 80)
 
 		self.cam = cam
 
-	def fullScan(self):
+	def checkFlip(self,centerLettering):
+		return centerLettering.mean()>30
 
-		self.cam.captureBinarizePinsAndLettering()
-		self.cam.cropOutPinZonesinBlackandWhite()
-		self.cam.cropOutLetteringinBlackandWhite()
-		binaryLetters = self.cam.binaryLetters
-		binaryPin = self.cam.binaryPin
-		topBin = self.cam.topPinRow
-		botBin = self.cam.botPinRow
-
-		if  self.checkFlip() is False:
-			print("No chip detected or flipped chip")
-		
-			print("Test result: FAILED")
-			#self.displayDebug(zone = "Missing")
-			return False
-	
-		if self.checkOutOfTray() is False:
-			print("Chip out of Tray")
-			print("Test result: FAILED")
-			#self.displayDebug(zone = "Out of Tray")
-			return False
-		
-		if self.checkPin(topBin,botBin) is False:
-			print("Test result: FAILED")
-			return False
-		
-		print("Test result: PASSED")
-		print("----------------")
-		print
-		#self.displayDebug()
-		return True
-
-	def checkPin(self,topPins,botPins):
-
-		cornersTop = self.topCornersUsingContour(topPins)
-		cornersTop = self.getTop20(cornersTop)
-		if cornersTop is []:
-			print("Top pins missing")
-			#self.displayDebug(zone = "Top Pins")
-			return False
-
-		cornersBot = self.botCornersUsingContour(botPins)
-		cornersBot = self.getBot20(cornersBot)
-		if cornersBot is []:
-			print("Bot pins missing")
-			#self.displayDebug(zone = "Bot Pins")
-			return False
-
-		if self.checkLinearity(cornersTop) is False:
-			print("Top pins not aligned")
-			#self.displayDebug(zone = "Top Pins")
-			return False
-
-		if self.checkLinearity(cornersBot) is False:
-			print("Bot pins not aligned")
-			#self.displayDebug(zone = "Bot Pins")
-			return False
-
-		if self.checkSpacing(cornersTop) is False:
-			print("Top spacing off")
-			#self.displayDebug(zone = "Top Pins")
-			return False
-		if self.checkSpacing(cornersBot) is False:
-			print("Bot spacing off")
-			#self.displayDebug(zone = "Bot Pins")
-			return False
-		return True
-
-	def checkFlip(self):
-		roi =  self.cam.centerLetteringBin
-		return roi.mean()>30
-
-	def checkOutOfTray(self):
-		BL = self.cam.BLPinBin
-		UR =  self.cam.URPinBin
+	def checkOutOfTray(self,BL,UR):
 		return BL.mean()>10 and UR.mean()>10
 
 	def checkLinearity(self,arr):	
@@ -123,6 +42,16 @@ class Analyser(object):
 			if(dist > self.maxPinDist or dist < self.minPinDist):
 				return False
 		return True
+	
+	def getLowest20Corners(self,botPinsImg):
+		bottomCorners = self.botCornersUsingContour(botPinsImg)
+		lowestCorners = self.getLowerEdgePoints(bottomCorners)
+		return lowestCorners
+	
+	def getHigest20Corners(self,topPinsImg):
+		topCorners = self.topCornersUsingContour(topPinsImg)
+		highestCorners = self.getHigherEdgePoints
+		return highestCorners
 
 	def topCornersUsingContour(self,bw_img):
 		contourBoxes = self.findContourBoxes(bw_img)
@@ -157,10 +86,10 @@ class Analyser(object):
 				boxes.append(box)
 		return boxes
 
-	def getBot20(self,corners):
+	def getLowerEdgePoints(self,corners):
 
 		"""preprocessing array"""
-		arr= np.array(corners)
+		arr = np.array(corners)
 		# Check the number of shape
 		if arr.shape[0] < 40:
 			return []
@@ -168,7 +97,8 @@ class Analyser(object):
 		arr = arr.reshape(arr.shape[0],2)
 		sortIndByX = np.lexsort((arr[:,1],arr[:,0]))
 		sortedByX = arr[sortIndByX]
-		bot20 = []
+
+		lowerCorners = []
 
 		#collecting corners into packets of 4 and taking the bottom 2
 		for foo in range(0,10):
@@ -180,39 +110,40 @@ class Analyser(object):
 			bot2Ind = np.lexsort((packet[:,0],packet[:,1]))[2:]
 
 			#appending to array
-			bot20.append(packet[bot2Ind[0]])
-			bot20.append(packet[bot2Ind[1]])
+			lowerCorners.append(packet[bot2Ind[0]])
+			lowerCorners.append(packet[bot2Ind[1]])
 
-		bot20 = np.array(bot20)
-		finalSortIndbyX = np.lexsort((bot20[:,1],bot20[:,0]))
+		lowerCorners = np.array(lowerCorners)
+		finalSortIndbyX = np.lexsort((lowerCorners[:,1],lowerCorners[:,0]))
 
-		finalBot = bot20[finalSortIndbyX]
+		finalBot = lowerCorners[finalSortIndbyX]
 		
 		return finalBot
 
-	def getTop20(self,corners):
-		arr= np.array(corners)
+	def getHigherEdgePoints(self,corners):
+		arr = np.array(corners)
 		#print(arr.shape)
 		if arr.shape[0] < 40:
 			return []
+			
 		arr = arr.reshape(arr.shape[0],2)
-
 		sortInd = np.lexsort((arr[:,1],arr[:,0]))
-		top20 = arr[sortInd]	
+		higherCorners = arr[sortInd]
 
 		finalTop = []
 		for foo in range(0,10):
-			packet = [top20[foo*4],top20[foo*4+1],top20[foo*4+2],top20[foo*4+3]]
-			packet = np.array(packet)			#print(packet)	
+			packet = [higherCorners[foo*4],higherCorners[foo*4+1],higherCorners[foo*4+2],higherCorners[foo*4+3]]
+			packet = np.array(packet)
+
 			top2Ind = np.lexsort((packet[:,0],packet[:,1]))[:-2]
 			finalTop.append(packet[top2Ind[0]])
 			finalTop.append(packet[top2Ind[1]])
+
 		finalTop = np.array(finalTop)
 		sortInd = np.lexsort((finalTop[:,1],finalTop[:,0]))
 		finalTop = finalTop[sortInd]
-
-		
 		return finalTop
+
 if __name__ == "__main__":
 	print("starting camera")
 	foo = WebcamVideoStream(src = 0).start()
