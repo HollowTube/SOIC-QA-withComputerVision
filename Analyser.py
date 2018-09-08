@@ -43,14 +43,14 @@ class Analyser(object):
 				return False
 		return True
 	
-	def getLowest20Corners(self,botPinsImg):
+	def getLowestCorners(self,botPinsImg):
 		bottomCorners = self.botCornersUsingContour(botPinsImg)
 		lowestCorners = self.getLowerEdgePoints(bottomCorners)
 		return lowestCorners
 	
-	def getHigest20Corners(self,topPinsImg):
+	def getHighestCorners(self,topPinsImg):
 		topCorners = self.topCornersUsingContour(topPinsImg)
-		highestCorners = self.getHigherEdgePoints
+		highestCorners = self.getHigherEdgePoints(topCorners)
 		return highestCorners
 
 	def topCornersUsingContour(self,bw_img):
@@ -61,7 +61,6 @@ class Analyser(object):
 			for corner in top2Indexes:
 				topCorners.append(box[corner])
 		return topCorners
-
 
 	def botCornersUsingContour(self,bw_img):
 		contourBoxes = self.findContourBoxes(bw_img)
@@ -125,7 +124,7 @@ class Analyser(object):
 		#print(arr.shape)
 		if arr.shape[0] < 40:
 			return []
-			
+
 		arr = arr.reshape(arr.shape[0],2)
 		sortInd = np.lexsort((arr[:,1],arr[:,0]))
 		higherCorners = arr[sortInd]

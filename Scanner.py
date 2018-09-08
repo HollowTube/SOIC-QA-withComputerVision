@@ -1,4 +1,3 @@
-
 import cv2	
 from Analyser import Analyser
 from ImageTaker import ImageTaker
@@ -13,7 +12,6 @@ class Scanner(object):
 		self.display = DisplayManager(cam)
 		self.analyser = Analyser(cam)
 	
-		
 	def fullScan(self):
 		self.currentSet = self.cam.getNewImageSet()
 
@@ -47,16 +45,13 @@ class Scanner(object):
 		return True
 
 	def checkPin(self,topPins,botPins):
-
-		cornersTop = self.analyser.topCornersUsingContour(topPins)
-		cornersTop = self.analyser.getTop20(cornersTop)
+		cornersTop = self.analyser.getHighestCorners(topPins)
 		if cornersTop is []:
 			print("Top pins missing")
 			#self.displayDebug(zone = "Top Pins")
 			return False
 
-		cornersBot = self.analyser.botCornersUsingContour(botPins)
-		cornersBot = self.analyser.getBot20(cornersBot)
+		cornersBot = self.analyser.getLowestCorners(botPins)
 		if cornersBot is []:
 			print("Bot pins missing")
 			#self.displayDebug(zone = "Bot Pins")
