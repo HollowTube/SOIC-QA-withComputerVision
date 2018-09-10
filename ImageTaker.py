@@ -15,7 +15,7 @@ class ImageTaker(object):
 	def __init__(self):
 		self.cap = WebcamVideoStream(src=0).start()
 
-		self.thresholdPin = 200
+		self.thresholdPin = 175
 		self.thresholdLetter = 180
 	
 		#ROIs in the format of (x1,y1,x2,y2)
@@ -100,6 +100,12 @@ class ImageTaker(object):
 	def getCopyOfImageSet(self):
 		imageSet = self.makeImageSet()
 		return imageSet
+	def getRawImg(self):
+		return self.raw.copy()
+	def getPinBin(self):
+		return self.binaryPin.copy()
+	def getLetteringBin(self):
+		return self.binaryLettering.copy()
 		
 if __name__ == "__main__":
 	print("starting camera")

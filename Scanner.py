@@ -1,5 +1,5 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2	
 from Analyser import Analyser
 from ImageTaker import ImageTaker
@@ -13,16 +13,18 @@ class Scanner(object):
 		self.cam = cam
 		self.display = DisplayManager(cam)
 		self.analyser = Analyser(cam)
+		self.debug = False
 	
 	def fullScan(self):
 		self.currentSet = self.cam.getNewImageSet()
-
+		if self.debug is True:
+			self.display.showDebugWindows
+		else:
+			self.display.displayRaw()
+		
 		centerLettering = self.currentSet['centerLetteringBin']
 		URPin = self.currentSet['URPinBin']
 		BLPin = self.currentSet['BLPinBin']
-
-		pinsBot = self.currentSet['centerLetteringBin']
-		pinsTop = self.currentSet['centerLetteringBin']
 
 		if  self.analyser.checkFlip(centerLettering) is False:
 			print("No chip detected or flipped chip")
@@ -35,11 +37,10 @@ class Scanner(object):
 			self.display.displayDebug(zone = "Out of Tray")
 			return False
 		try:
-			if self.checkPin(pinsTop,pinsBot) is False:
+			if self.checkPin() is False:
 				print("Test result: FAILED")
 				return False
 		except:
-			
 			print("Unexpected Error")
 			print("Test result: FAILED")
 			return False
@@ -49,7 +50,11 @@ class Scanner(object):
 		print
 		return True
 
-	def checkPin(self,topPins,botPins):
+	def checkPin(self):
+
+		botPins = self.currentSet['botPinRowBin']
+		topPins = self.currentSet['topPinRowBin']
+
 		cornersTop = self.analyser.getHighestCorners(topPins)
 		if cornersTop is []:
 			print("Top pins missing")

@@ -51,7 +51,7 @@ class DisplayManager(object):
 
 
 	def displayDebugInformation(self):
-		img = self.cam.raw.copy()
+		img = self.cam.getRawImg()
 		main = self.cam.cropROI(self.cam.mainZone,img)
 		self.addROIRectangles(img)
 		self.drawContourBoxes(main)
@@ -64,12 +64,11 @@ class DisplayManager(object):
 		cv2.rectangle(img,(ROI[0],ROI[1]),(ROI[2],ROI[3]),(0,0,255),3)
 
 	def displayBinary(self):
-		bw_img = self.cam.binaryPin.copy()
+		bw_img = self.cam.getBinPin()
 		cv2.imshow('Binary', bw_img)
 
 	def drawContourBoxes(self,img):
 		
-
 		topPinRow = self.cam.currentImageSet['topPinRowBin']
 		botPinRow = self.cam.currentImageSet['botPinRowBin']
 
@@ -91,7 +90,7 @@ class DisplayManager(object):
 			cv2.moveWindow('Marking',640,512)
 			self.displayDebugInformation()
 	def displayRaw(self):
-		cv2.imshow('Raw',cam.raw.copy())
+		cv2.imshow('Raw',self.cam.raw.copy())
 
 if __name__ == "__main__":
 	print("starting camera")

@@ -1,5 +1,5 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import time
@@ -326,7 +326,8 @@ class camera(object):
 if __name__ == "__main__":
 	print("Initializing...")
 	cam = camera()
-	cam.importParameters("20Pins.txt")
+	img  = cam.cap.read()
+	cv2.imwrite("passExample.png",img)
 	print("Complete")
 	while True:
 		"""capturing images"""

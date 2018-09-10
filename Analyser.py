@@ -38,8 +38,11 @@ class Analyser(object):
 		for x in range(0,len(corners) - 2):
 			dist = np.linalg.norm(corners[x]-corners[x+2])
 			error.append(dist)
+		x= 0
 		for dist in error:
+			x=x+1
 			if(dist > self.maxPinDist or dist < self.minPinDist):
+				print("pin %d Space=%3.0f" % (x/2+1,dist))
 				return False
 		return True
 	
@@ -51,6 +54,8 @@ class Analyser(object):
 	def getHighestCorners(self,topPinsImg):
 		topCorners = self.topCornersUsingContour(topPinsImg)
 		highestCorners = self.getHigherEdgePoints(topCorners)
+
+
 		return highestCorners
 
 	def topCornersUsingContour(self,bw_img):
@@ -60,6 +65,7 @@ class Analyser(object):
 			top2Indexes = np.argpartition(box[:, 1], 2)[:2]
 			for corner in top2Indexes:
 				topCorners.append(box[corner])
+		topCorners = np.array(topCorners)
 		return topCorners
 
 	def botCornersUsingContour(self,bw_img):
@@ -83,6 +89,8 @@ class Analyser(object):
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
 				boxes.append(box)
+				
+		boxes = np.array(boxes)
 		return boxes
 
 	def getLowerEdgePoints(self,corners):
@@ -116,12 +124,12 @@ class Analyser(object):
 		finalSortIndbyX = np.lexsort((lowerCorners[:,1],lowerCorners[:,0]))
 
 		finalBot = lowerCorners[finalSortIndbyX]
+		finalBot = np.array(finalBot)
 		
 		return finalBot
 
 	def getHigherEdgePoints(self,corners):
 		arr = np.array(corners)
-		#print(arr.shape)
 		if arr.shape[0] < 40:
 			return []
 
@@ -141,6 +149,7 @@ class Analyser(object):
 		finalTop = np.array(finalTop)
 		sortInd = np.lexsort((finalTop[:,1],finalTop[:,0]))
 		finalTop = finalTop[sortInd]
+		finalTop = np.array(finalTop)
 		return finalTop
 
 if __name__ == "__main__":
