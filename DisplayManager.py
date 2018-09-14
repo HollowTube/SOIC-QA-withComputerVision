@@ -85,12 +85,14 @@ class DisplayManager(object):
 		
 	def showDebugWindows(self):
 			cv2.imshow('Pin',self.cam.binaryPin)
-			cv2.moveWindow('Pin',0,512)
+			cv2.moveWindow('Pin',0,0)
 			cv2.imshow('Marking',self.cam.binaryLettering)
 			cv2.moveWindow('Marking',640,512)
 			self.displayDebugInformation()
+			cv2.waitKey(1)
 	def displayRaw(self):
-		cv2.imshow('Raw',self.cam.raw.copy())
+		cv2.imshow('Main',self.cam.raw.copy())
+		cv2.moveWindow('Main',0,0)
 
 if __name__ == "__main__":
 	print("starting camera")

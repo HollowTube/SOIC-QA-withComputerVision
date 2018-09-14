@@ -9,18 +9,30 @@ from scipy.stats import linregress
 class Analyser(object):
 	#Pin spacing parameters
 	def __init__(self,cam):
-		self.maxPinDist = 50
-		self.minPinDist = 43
-
+		self.maxPinDist = 52
+		self.minPinDist = 42
+		self.pinNumber = 10
 		self.cam = cam
+		self.debug = True
 
 	def checkFlip(self,centerLettering):
 		return centerLettering.mean()>30
+		if (centerLettering.mean()>10):
+			return True
+		else:
+			return False
 
 	def checkOutOfTray(self,BL,UR):
-		return BL.mean()>10 and UR.mean()>10
+		if BL.mean()>20 and UR.mean()>20:
+			return  True
+		else:
+			return False
 
 	def checkLinearity(self,arr):	
+		# check if array has less than 10pin
+		if len(arr) != self.pinNumber*2:
+			print len(arr)
+			return False
 		x,y  = np.hsplit(arr,2)
 		x = np.ravel(x)
 		y = np.ravel(y)
@@ -28,10 +40,11 @@ class Analyser(object):
 		error = np.absolute(y-(m*x + c))
 		for iterator in range (0,len(error)):
 			if error[iterator] > 3:
-				print("error", error[iterator])
+				#print("error", error[iterator])
 				print("Error CHECK PIN {0}".format(iterator//2))
 		if max(error) >  3:
 			return False
+		return True
 
 	def checkSpacing(self,corners):
 		error = []

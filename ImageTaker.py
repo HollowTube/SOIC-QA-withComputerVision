@@ -13,31 +13,40 @@ import imutils
 class ImageTaker(object):
 
 	def __init__(self):
+		# Define these parameters for different package type.
+		self.pinNumber=20
+		self.xSize=510
+		self.ySize=440
+		self.xOff=50
+		self.yOff=20
+		self.pinRange=110
+		self.thresholdPin = 185
+		self.thresholdLetter = 185
+		self.centerLetteringZone = (110, 240, 250, 320)
 		self.cap = WebcamVideoStream(src=0).start()
 
-		self.thresholdPin = 175
-		self.thresholdLetter = 180
-	
 		#ROIs in the format of (x1,y1,x2,y2)
-		self.mainZone = np.int0((45, 10, 600, 450))
-		self.topPinRowZone = (30, 10, 540, 150)
-		self.botPinRowZone = (30, 350, 540, 430)
-		self.centerLetteringZone = (297, 259, 459, 323)
-		self.BLPinZone = (60, 350, 100, 419)
-		self.URPinZone =(470, 10, 520, 80)
-		
-
+		self.mainZone = np.int0((0,0,self.xSize,self.ySize))
+		self.topPinRowZone = (0, 0, self.xSize, self.pinRange)
+		self.botPinRowZone = (0, self.ySize-self.pinRange, self.xSize,self.ySize)
+		self.BLPinZone = (0, 0, self.xSize, self.pinRange)
+		self.URPinZone = (0, 0, self.xSize, self.pinRange)		
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
 		self.binaryLettering= np.float32()
-
 
 	#updates stored images within object
 	#3 images stored, raw, binary for the pins, and binary for the lettering
 	def captureBinarizePinsAndLettering(self):
 		#colored image
-		img = self.cap.read()
-		
+		img_raw = self.cap.read()
+
+		# crop image to proper size
+		img1=img_raw[self.yOff:self.yOff+self.ySize,self.xOff:self.xOff+self.xSize]
+
+		# Flip the upsize down image (flip the camera ???)
+		img=cv2.flip(img1,-1)
+
 		#conversion to greyscale
 		gray_raw = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 		
