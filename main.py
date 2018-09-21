@@ -1,9 +1,9 @@
 from gpiozero import Button,OutputDevice,InputDevice
 import time
-from Analyser import Analyser
-from ImageTaker import ImageTaker
+from ImageAnalyse import Analyser
+from ImageCapture import ImageCapture
 from DisplayManager import DisplayManager
-from Scanner import Scanner
+from QA_control import QA_control
 import cv2
 
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 			time.sleep(0.010)
 		start_time = time.time()
 		failFlag.on()
-		time.sleep(0.25)
+		time.sleep(0.45)
 		# Turn busy on, t
 		busy.on()
 		total=total+1

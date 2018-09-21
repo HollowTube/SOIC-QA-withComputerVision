@@ -11,7 +11,7 @@ from imutils.video import WebcamVideoStream
 import imutils
 from ImageExtract import Analyser
 
-class ImageTaker(object):
+class ImageCapture(object):
 
 	def __init__(self):
 		# Define these parameters for different package type.
@@ -23,9 +23,9 @@ class ImageTaker(object):
 		self.xOff=50
 		self.yOff=20
 		self.pinRange=110
-		self.thresholdPin = 185
+		self.thresholdPin = 175
 		self.thresholdLetter = 185
-		self.xadj=15
+		self.xadj=30
 		self.yadj=55
 		self.centerLetteringZone = (110, 240, 250, 320)
 		self.cap = WebcamVideoStream(src=0).start()
@@ -35,10 +35,10 @@ class ImageTaker(object):
 		self.topPinRowZone = (0, 0,self.xDSize,70)
 		self.botPinRowZone = (0, self.yDSize-70, self.xDSize,self.yDSize)
 		self.BLPinZone = (0, 0, self.xSize, self.pinRange)
-		self.URPinZone = (0, 0, self.xSize, self.pinRange)		
+		self.URPinZone = (0, self.ySize-self.pinRange, self.xSize, self.ySize)		
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
-		self.binaryLettering= np.float32()
+		self.binaryLettering = np.float32()
 
 	#updates stored images within object
 	#3 images stored, raw, binary for the pins, and binary for the lettering
@@ -102,7 +102,7 @@ class ImageTaker(object):
 		for cnt in contours:
 			area = cv2.contourArea(cnt)
 			perimeter =cv2.arcLength(cnt,True)
-			if(area >320 and area <500 and perimeter <100):
+			if(area >320 and area <550 and perimeter <100):
 				rect = cv2.minAreaRect(cnt)
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
@@ -139,7 +139,6 @@ class ImageTaker(object):
 	# This function will capture and then extract only the image of the device
 	# Run this function when we are certain a device is present in the spocket.
 	def captureExtract(self):
-		
 		#colored image
 		img_raw = self.cap.read()
 		# crop image to proper size
@@ -164,55 +163,34 @@ class ImageTaker(object):
 		# Now rotate image
 		cols,rows = gray_raw.shape
 		M= cv2.getRotationMatrix2D((rows,cols),angle,1)
-		gray_rot=cv2.warpAffine(gray_raw,M,(rows,cols))
+		gray_rot=cv2.warpAffine(blur,M,(rows,cols))
 		# Find contour again 
 		oldbox=(bl,br,tr,tl)
 		oldbox=np.array(oldbox)
-		blur = cv2.GaussianBlur(gray_rot,(7,7),0)
-		ret1,th1 =cv2.threshold(blur,self.thresholdPin,255,cv2.THRESH_BINARY)
+		ret1,th1 =cv2.threshold(gray_rot,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
 		bw_image = np.uint8(binaryPin)
 		(bl,br,tr,tl)=self.findOC(bw_image)
-		# Now the new boundary is found crop the new image to proper size
-
+		# Now the new boundary is found crop the new image to proper size		
 		final_raw=gray_rot[bl[1]-self.yadj:tr[1]+self.yadj,bl[0]-self.xadj:tr[0]+self.xadj]
-		(self.yDSize,self.xDSize)=final_raw.shape
+		ret1,th1 =cv2.threshold(final_raw,self.thresholdPin,255,cv2.THRESH_BINARY)
+		binaryPin = np.float32(th1)
+		ret1,th1 =cv2.threshold(final_raw,self.thresholdLetter,255,cv2.THRESH_BINARY)
+		binaryLettering = np.float32(th1)
 		# Redefine the new zone for top and bot pin row
+		(self.yDSize,self.xDSize)=final_raw.shape
 		self.topPinRowZone = (0, 0,self.xDSize,70)
 		self.botPinRowZone = (0, self.yDSize-70, self.xDSize,self.yDSize)
-		print self.xDSize,self.yDSize
-		cv2.drawContours(gray_raw,[oldbox],-1,(128,0,128),2)
-		cv2.imshow('capture',gray_raw)
-		newbox=(bl,br,tr,tl)
-		newbox=np.array(newbox)
-		cv2.drawContours(final_raw,[newbox],-1,(128,0,128),2)
-		temp=self.cropROI(self.botPinRowZone ,final_raw)
-		print self.botPinRowZone 
-		print self.topPinRowZone 
-		cv2.imshow('top pin',temp)
-		cv2.imshow('rot',final_raw)
-
-		cv2.waitKey(1)
-		return newbox
-
-		self.raw = img
+		self.raw = final_raw
 		self.binaryPin = binaryPin
 		self.binaryLettering  = binaryLettering
-		return img,binaryPin,binaryLettering
+		return final_raw,binaryPin,binaryLettering
 
 	def cropROI(self, ROI,img):
 		return img[ROI[1]:ROI[3],ROI[0]:ROI[2]]	
-	
-	def cropOutAllZonesinColor(self):
-		self.main = self.cropROI(self.mainZone,self.raw)
-		self.topPinRow = self.cropROI(self.topPinRowZone,self.main) 
-		self.botPinRow = self.cropROI(self.botPinRowZone,self.main)
-		self.centerLettering = self.cropROI(self.centerLetteringZone,self.main)
-		self.BLPin = self.cropROI(self.BLPinZone,self.main)
-		self.URPin = self.cropROI(self.URPinZone,self.main) 
 
 	def cropOutPinZonesinBlackandWhite(self):
-		mainBin = self.cropROI(self.mainZone,self.binaryPin.copy())
+		mainBin = self.cropROI(self.mainZone,self.binaryPin)
 		topPinRowBin = self.cropROI(self.topPinRowZone,mainBin) 
 		botPinRowBin = self.cropROI(self.botPinRowZone,mainBin)
 		BLPinBin = self.cropROI(self.BLPinZone,mainBin)
@@ -220,12 +198,17 @@ class ImageTaker(object):
 		return topPinRowBin,botPinRowBin,BLPinBin,URPinBin 
 
 	def cropOutLetteringinBlackandWhite(self):
-		main = self.cropROI(self.mainZone,self.binaryLettering.copy())
+		main = self.cropROI(self.mainZone,self.binaryLettering)
 		centerLetteringBin = self.cropROI(self.centerLetteringZone,main)
 		return centerLetteringBin
 
 	def getNewImageSet(self):
 		self.captureBinarizePinsAndLettering()
+		self.currentImageSet = self.makeImageSet()
+		return self.currentImageSet
+
+	def getExtImageSet(self):
+		self.captureExtract()
 		self.currentImageSet = self.makeImageSet()
 		return self.currentImageSet
 
@@ -252,12 +235,25 @@ class ImageTaker(object):
 		
 if __name__ == "__main__":
 	print("starting camera")
-	cam = ImageTaker()
+	cam = ImageCapture()
 	print("starting Display")
 	#display = DisplayManager(cam)
 	while True:
-		cam.captureExtract()
+		start_time = time.time()
+		(main,binary,letter)=cam.captureBinarizePinsAndLettering()		
+		(main,binary,letter)=cam.captureExtract()
+		end_time = time.time()
+		print("time taken {0}".format(end_time-start_time))
 		
+		cv2.imshow('capture',main)
+
+		temp=cam.cropROI(cam.botPinRowZone ,binary)
+		#print cam.botPinRowZone 
+		#print cam.topPinRowZone 
+		cv2.imshow('top pin',temp)
+		cv2.imshow('rot',binary)
+
+		cv2.waitKey(1)
 		pass
 	foo.cap.stream.release()
 	cv2.destroyAllWindows()

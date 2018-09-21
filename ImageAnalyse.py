@@ -12,6 +12,12 @@ class Analyser(object):
 		self.maxPinDist = 52
 		self.minPinDist = 42
 		self.pinNumber = 10
+
+		self.upperAreaThreshold = 300
+		self.lowerAreaThreshold = 150
+
+		self.upperPerimeterThreshold= 90
+		self.lowerPerimeterThreshold = 30
 		self.cam = cam
 		self.debug = True
 
@@ -31,7 +37,6 @@ class Analyser(object):
 	def checkLinearity(self,arr):	
 		# check if array has less than 10pin
 		if len(arr) != self.pinNumber*2:
-			print len(arr)
 			return False
 		x,y  = np.hsplit(arr,2)
 		x = np.ravel(x)
@@ -67,8 +72,6 @@ class Analyser(object):
 	def getHighestCorners(self,topPinsImg):
 		topCorners = self.topCornersUsingContour(topPinsImg)
 		highestCorners = self.getHigherEdgePoints(topCorners)
-
-
 		return highestCorners
 
 	def topCornersUsingContour(self,bw_img):
@@ -96,15 +99,29 @@ class Analyser(object):
 		im2, contours, hierarchy = cv2.findContours(bw_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 		contours = np.array(contours)
 		boxes = []
+		areaList = []
+		perimeterList = []
 		for cnt in contours:
-			if(cv2.contourArea(cnt) > 140):
+			if(self.checkArea  and self.checkPerimeter(cnt)):
 				rect = cv2.minAreaRect(cnt)
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
 				boxes.append(box)
+				areaList.append(cv2.contourArea(cnt))
+				perimeterList.append(cv2.arcLength(cnt,True))
 				
+		#print("Max Area: %d   Min Area: %d" % (max(areaList),min(areaList)))
+		#print("Max Perimeter: %d   Min Perimeter: %d" % (max(perimeterList),min(perimeterList)))
 		boxes = np.array(boxes)
 		return boxes
+
+	def checkArea(self,cnt):
+		area = cv2.contourArea(cnt)
+		return area> self.lowerAreaThreshold 
+
+	def checkPerimeter(self,cnt):
+		perimeter = cv2.arcLength(cnt,True)
+		return perimeter > self.lowerPerimeterThreshold and perimeter < self.upperPerimeterThreshold
 
 	def getLowerEdgePoints(self,corners):
 

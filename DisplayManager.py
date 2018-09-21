@@ -2,7 +2,7 @@ import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 from ImageTaker import ImageTaker
-from Analyser import Analyser
+from  ImageExtract import Analyser
 import numpy as np
 
 	
@@ -50,7 +50,7 @@ class DisplayManager(object):
 		cv2.waitKey(1)
 
 
-	def displayDebugInformation(self):
+	def displayDebugInformation(self ):
 		img = self.cam.getRawImg()
 		main = self.cam.cropROI(self.cam.mainZone,img)
 		self.addROIRectangles(img)
@@ -79,9 +79,9 @@ class DisplayManager(object):
 		botCropped = self.cam.cropROI(self.cam.botPinRowZone,img)
 
 		for box in topBoxes:
-			cv2.drawContours(topCropped,[box],0,(0,0,255),2)
+			cv2.drawContours(topCropped,[box],0,(0,128,255),2)
 		for box in botBoxes:
-			cv2.drawContours(botCropped,[box],0,(0,0,255),2)
+			cv2.drawContours(botCropped,[box],0,(0,128,255),2)
 		
 	def showDebugWindows(self):
 			cv2.imshow('Pin',self.cam.binaryPin)
