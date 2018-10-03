@@ -9,7 +9,7 @@ from scipy.stats import linregress
 import csv
 from imutils.video import WebcamVideoStream
 import imutils
-from ImageAnalyse import Analyser
+from ImageExtract import Analyser
 
 class ImageCapture(object):
 
@@ -17,25 +17,23 @@ class ImageCapture(object):
 		# Define these parameters for different package type.
 		self.pinNumber=20
 		self.xSize=510
-		self.xDSize=470
+		self.xDSize=500
 		self.ySize=440
-		self.yDSize=340
+		self.yDSize=390
 		self.xOff=50
-		self.yOff=35
+		self.yOff=20
 		self.pinRange=110
-		self.thresholdPin = 185
-		self.thresholdLetter = 175
+		self.thresholdPin = 175
+		self.thresholdLetter = 185
 		self.xadj=30
-		self.yadj=50
-		self.centerLetteringZone = (250, 130, 390, 210)
+		self.yadj=55
+		self.centerLetteringZone = (110, 240, 250, 320)
 		self.cap = WebcamVideoStream(src=0).start()
 
 		#ROIs in the format of (x1,y1,x2,y2)
 		self.mainZone = np.int0((0,0,self.xSize,self.ySize))
-		self.topPinRowZone = (0, 0,self.xDSize,80)
-		self.botPinRowZone = (0, self.yDSize-30, self.xDSize,self.yDSize+80)
-		#self.topPinRowZone  = (0, 10, self.xSize, self.pinRange)
-		#self.botPinRowZone  = (0, self.ySize-self.pinRange, self.xSize, self.ySize-25)
+		self.topPinRowZone = (0, 0,self.xDSize,70)
+		self.botPinRowZone = (0, self.yDSize-70, self.xDSize,self.yDSize)
 		self.BLPinZone = (0, 0, self.xSize, self.pinRange)
 		self.URPinZone = (0, self.ySize-self.pinRange, self.xSize, self.ySize)		
 		self.raw = np.float32()
@@ -61,7 +59,6 @@ class ImageCapture(object):
 		blur = cv2.GaussianBlur(gray_raw,(5,5),0)
 
 		ret1,th1 =cv2.threshold(blur,self.thresholdPin,255,cv2.THRESH_BINARY)
-		#th1 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,5,2)	
 		binaryPin = np.float32(th1)
 
 		ret2,th2 = cv2.threshold(blur,self.thresholdLetter,255,cv2.THRESH_BINARY)
@@ -92,7 +89,7 @@ class ImageCapture(object):
 		ret2,th2 = cv2.threshold(blur,self.thresholdLetter,255,cv2.THRESH_BINARY)
 		binaryLettering = np.float32(th2)
 
-		self.raw = gray_raw
+		self.raw = img
 		self.binaryPin = binaryPin
 		self.binaryLettering  = binaryLettering
 		return img,binaryPin,binaryLettering
@@ -105,7 +102,7 @@ class ImageCapture(object):
 		for cnt in contours:
 			area = cv2.contourArea(cnt)
 			perimeter =cv2.arcLength(cnt,True)
-			if(area >250 and area <550 and perimeter <100):
+			if(area >320 and area <550 and perimeter <100):
 				rect = cv2.minAreaRect(cnt)
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
@@ -136,7 +133,6 @@ class ImageCapture(object):
 			br=xSorted[-1]		
 		newbox=(bl,br,tr,tl)
 		newbox=np.array(newbox)		
-		#print bl
 		return newbox
 
 	
@@ -163,10 +159,7 @@ class ImageCapture(object):
 		if ydiff==0:
 			angle=0
 		else:	
-			angle=np.arctan2(ydiff,xdiff)*180/np.pi	
-		if angle >10 or angle <10:
-			angle=0
-	
+			angle=np.arctan2(ydiff,xdiff)*180/np.pi		
 		# Now rotate image
 		cols,rows = gray_raw.shape
 		M= cv2.getRotationMatrix2D((rows,cols),angle,1)
@@ -177,22 +170,17 @@ class ImageCapture(object):
 		ret1,th1 =cv2.threshold(gray_rot,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
 		bw_image = np.uint8(binaryPin)
-		
 		(bl,br,tr,tl)=self.findOC(bw_image)
 		# Now the new boundary is found crop the new image to proper size		
-		#final_raw=gray_rot[bl[1]-self.yadj:tr[1]+self.yadj,bl[0]-self.xadj:tr[0]+self.xadj]
-		
-		final_raw=gray_rot[bl[1]-self.yadj:bl[1]+self.yDSize, bl[0]-self.xadj:bl[0]+self.xDSize]
-
-		cv2.imshow('tt',final_raw)
+		final_raw=gray_rot[bl[1]-self.yadj:tr[1]+self.yadj,bl[0]-self.xadj:tr[0]+self.xadj]
 		ret1,th1 =cv2.threshold(final_raw,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
 		ret1,th1 =cv2.threshold(final_raw,self.thresholdLetter,255,cv2.THRESH_BINARY)
 		binaryLettering = np.float32(th1)
 		# Redefine the new zone for top and bot pin row
-		#(self.yDSize,self.xDSize)=final_raw.shape
-		#self.topPinRowZone = (0, 0,self.xDSize,70)
-		#self.botPinRowZone = (0, self.yDSize-70, self.xDSize,self.yDSize)
+		(self.yDSize,self.xDSize)=final_raw.shape
+		self.topPinRowZone = (0, 0,self.xDSize,70)
+		self.botPinRowZone = (0, self.yDSize-70, self.xDSize,self.yDSize)
 		self.raw = final_raw
 		self.binaryPin = binaryPin
 		self.binaryLettering  = binaryLettering
@@ -221,16 +209,7 @@ class ImageCapture(object):
 
 	def getExtImageSet(self):
 		self.captureExtract()
-		#self.currentImageSet = self.makeImageSet()
-		topPinRowBin = self.cropROI(self.topPinRowZone,self.binaryPin) 
-		botPinRowBin = self.cropROI(self.botPinRowZone,self.binaryPin)
-		cv2.imshow('ttt',self.binaryPin)
-		self.currentImageSet = {}
-		self.currentImageSet['topPinRowBin'] = 	topPinRowBin
-		self.currentImageSet['botPinRowBin'] = 	botPinRowBin
-		self.currentImageSet['BLPinBin'] = 	self.binaryPin
-		self.currentImageSet['URPinBin'] = 	self.binaryPin
-		self.currentImageSet['centerLetteringBin'] = self.binaryPin
+		self.currentImageSet = self.makeImageSet()
 		return self.currentImageSet
 
 	def makeImageSet(self):
@@ -261,7 +240,7 @@ if __name__ == "__main__":
 	#display = DisplayManager(cam)
 	while True:
 		start_time = time.time()
-		#(main,binary,letter)=cam.captureBinarizePinsAndLettering()		
+		(main,binary,letter)=cam.captureBinarizePinsAndLettering()		
 		(main,binary,letter)=cam.captureExtract()
 		end_time = time.time()
 		print("time taken {0}".format(end_time-start_time))

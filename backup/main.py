@@ -9,8 +9,8 @@ import cv2
 
 if __name__ == "__main__":
 	print("Initializing...")
-	cam = ImageCapture()
-	scanner = QA_control(cam)
+	cam = ImageTaker()
+	scanner = Scanner(cam)
 	on = OutputDevice(22)
 	trigger = InputDevice(4)
 	busy = OutputDevice(27)
@@ -21,17 +21,15 @@ if __name__ == "__main__":
 	dpass=0
 	dfail=0
 	total=0
-	#failFlag.on()
 	print("Complete")
 	while True:
 		print("Waiting for Trigger")
 		
 		while trigger.value is True:
 			time.sleep(0.010)
-		# after trigger sleep for 450ms
-		time.sleep(0.35)
 		start_time = time.time()
 		failFlag.on()
+		time.sleep(0.45)
 		# Turn busy on, t
 		busy.on()
 		total=total+1
@@ -48,7 +46,7 @@ if __name__ == "__main__":
 			print("+++++PASS+++++")
 		# Test done
 		busy.off()
-		print "Currrent test %d      Total Pass: %d Total Fail: %d Pin check fail %d"  % (good,dpass,dfail,scanner.pinfail)
+		print "Currrent test %d      Total Pass: %d Total Fail: %d"  % (good,dpass,dfail)
 		# Wait until the trigger is released
 	    	while trigger.value is False:
 			time.sleep(0.01)

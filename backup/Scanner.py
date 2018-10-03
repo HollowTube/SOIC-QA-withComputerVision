@@ -2,8 +2,8 @@ import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2	
 import time
-from ImageExtract import Analyser
-from ImageTaker import ImageTaker
+from ImageAnalyse import Analyser
+from ImageCapture import ImageCapture
 from DisplayManager import DisplayManager
 
 
@@ -35,15 +35,21 @@ class Scanner(object):
 		URPin = self.currentSet['URPinBin']
 		BLPin = self.currentSet['BLPinBin']
 
-		if  self.analyser.checkFlip(centerLettering) is False:
-			print("Marker not found")
-			#self.display.displayDebug(zone = "Missing")
-			return False
+		# This section check for label and IC is in sprocket properly
+
 		if self.analyser.checkOutOfTray(URPin,BLPin) is False:
 			print("Sprocket empty")
 			#print("Test result: FAILED")
 			#self.display.displayDebug(zone = "Out of Tray")
 			return False
+		if  self.analyser.checkFlip(centerLettering) is False:
+			print("Marker not found")
+			#self.display.displayDebug(zone = "Missing")
+			return False
+
+		# This section verify pin spacing and aligment
+		# A better image is required,  extracted image capture
+		self.currentSet = self.cam.getExtImageSet()
 		try:
 			if self.checkPin() is False:
 				#print("Test result: FAILED")
@@ -98,10 +104,10 @@ class Scanner(object):
 		return True
 
 if __name__ == "__main__":
-	cam = ImageTaker()
+	cam = ImageCapture()
 	scanner = Scanner(cam)
 	while True:
-		currentSet = cam.getNewImageSet()
+		currentSet = cam.getExtImageSet()
 		scanner.display.displayDebugInformation()
 		#scanner.fullScan()
 		time.sleep(.5)

@@ -13,13 +13,14 @@ class QA_control(object):
 		self.cam = cam
 		self.display = DisplayManager(cam)
 		self.analyser = Analyser(cam)
-		self.debug = True
+		self.debug = False
 		self.currentSet = self.cam.getNewImageSet()
+		self.pinfail=0;
 		cv2.imshow('Main',self.cam.raw)
 		cv2.moveWindow('Main',0,0)
-		if self.debug is True:
-			cv2.imshow('BW',self.cam.binaryPin)
-			cv2.moveWindow('BW',500,0)
+		#if self.debug is True:
+		#	cv2.imshow('BW',self.cam.binaryPin)
+		#	cv2.moveWindow('BW',500,0)
 		cv2.waitKey(1)
 
 	def fullScan(self):
@@ -33,11 +34,16 @@ class QA_control(object):
 		URPin = self.currentSet['URPinBin']
 		BLPin = self.currentSet['BLPinBin']
 
+
 		# First check if the device exist in sprocket
 		if self.analyser.checkOutOfTray(URPin,BLPin) is False:
 			print("Sprocket empty")
 			#print("Test result: FAILED")
 			#self.display.displayDebug(zone = "Out of Tray")
+			return False
+
+		if  self.analyser.checkFlip(centerLettering) is False:
+			print("Marker not found")
 			return False
 
 		# The capture new image with device and rotation
@@ -47,29 +53,31 @@ class QA_control(object):
 			print("Unexpected Error")
 			print(str(e))
 			#print("Test result: FAILED")
-			return False
+			return True
+		#for x in range (0,3):
+		#	cv2.imshow('Ext', self.cam.raw)
+		#	cv2.waitKey(1)
 
+		TopRowPin=self.currentSet['topPinRowBin']
+		BotRowPin=self.currentSet['botPinRowBin']
 		if self.debug is True:
+			cv2.imshow('Marker',centerLettering)
+			cv2.imshow('Top pin',TopRowPin)
+			cv2.imshow('Bottom pin',BotRowPin)
 			cv2.imshow('BW',self.cam.binaryPin)
-			cv2.moveWindow('BW',500,0)
-
-		if  self.analyser.checkFlip(centerLettering) is False:
-			print("Marker not found")
-			#self.display.displayDebug(zone = "Missing")
-			return False
+			cv2.moveWindow('Marker',600,0)
+			cv2.moveWindow('Top pin',0,500)
+			cv2.moveWindow('Bottom pin',0,600)
+			cv2.waitKey(1)
 		try:
 			if self.checkPin() is False:
-				#print("Test result: FAILED")
-				return False
+				self.pinfail=self.pinfail+1
+				return True
 		except Exception as e:
 			print("Unexpected Error")
 			print(str(e))
-			#print("Test result: FAILED")
-			return False
-			
-		#print("Test result: PASSED")
-		#print("----------------")
-		#print
+			return True
+
 		return True
 
 	def checkPin(self):
@@ -78,7 +86,7 @@ class QA_control(object):
 		topPins = self.currentSet['topPinRowBin']
 
 		cornersTop = self.analyser.getHighestCorners(topPins)
-		#print len(cornersTop)
+		print len(cornersTop)
 		if len(cornersTop) != 20:
 			print("Top pins missing")
 			print len(cornersTop)
@@ -86,7 +94,7 @@ class QA_control(object):
 			return False
 
 		cornersBot = self.analyser.getLowestCorners(botPins)
-		#print len(cornersBot)
+		print len(cornersBot)
 		if len(cornersBot) !=20:
 			print("Bot pins missing")
 			#self.display.displayDebug(zone = "Bot Pins")
@@ -116,7 +124,7 @@ if __name__ == "__main__":
 	cam = ImageCapture()
 	scanner = QA_control(cam)
 	while True:
-		#currentSet = cam.getExtImageSet()
+		currentSet = cam.getExtImageSet()
 		
 		#BotPinSet=scanner.currentSet['botPinRowBin']
 		#TopPinSet=scanner.currentSet['topPinRowBin']

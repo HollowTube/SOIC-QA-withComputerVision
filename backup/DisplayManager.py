@@ -1,8 +1,8 @@
 import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
-from ImageCapture import ImageCapture
-from  ImageAnalyse import Analyser
+from ImageTaker import ImageTaker
+from  ImageExtract import Analyser
 import numpy as np
 
 	
@@ -96,7 +96,7 @@ class DisplayManager(object):
 
 if __name__ == "__main__":
 	print("starting camera")
-	cam = ImageCapture()
+	cam = ImageTaker()
 	display = DisplayManager(cam)
 	print("starting Display")
 	while True:
