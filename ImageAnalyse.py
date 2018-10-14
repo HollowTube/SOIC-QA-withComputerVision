@@ -12,23 +12,24 @@ class Analyser(object):
 		self.maxPinDist = 52
 		self.minPinDist = 42
 		self.pinNumber = 10
+		self.pinAlignTol = 1.9
 
-		self.upperAreaThreshold = 300
-		self.lowerAreaThreshold = 150
-
-		self.upperPerimeterThreshold= 90
+		self.upperAreaThreshold = 450
+		self.lowerAreaThreshold = 40
+		self.upperPerimeterThreshold= 150
 		self.lowerPerimeterThreshold = 30
 		self.cam = cam
 		self.debug = True
 
 	def checkFlip(self,centerLettering):
-		return centerLettering.mean()>30
-		if (centerLettering.mean()>10):
+		#print centerLettering.mean()
+		if (centerLettering.mean()>30):
 			return True
 		else:
 			return False
 
 	def checkOutOfTray(self,BL,UR):
+		#print BL.mean(),UR.mean()
 		if BL.mean()>20 and UR.mean()>20:
 			return  True
 		else:
@@ -36,20 +37,19 @@ class Analyser(object):
 
 	def checkLinearity(self,arr):	
 		# check if array has less than 10pin
-		if len(arr) != self.pinNumber*2:
-			return False
 		x,y  = np.hsplit(arr,2)
 		x = np.ravel(x)
 		y = np.ravel(y)
 		m,c = linregress(x,y)[:2]
 		error = np.absolute(y-(m*x + c))
-		for iterator in range (0,len(error)):
-			if error[iterator] > 3:
-				#print("error", error[iterator])
-				print("Error CHECK PIN {0}".format(iterator//2))
-		if max(error) >  3:
-			return False
-		return True
+		for pin in range (0,len(error)):
+			if error[pin] > self.pinAlignTol:
+				#print("error", error[pin])
+				#print("Pin %d offset %5.2f" % (pin//2+1,error[pin]))
+				return False,pin/2+1
+#		if max(error) >  self.pinAlignTol:
+#			return False
+		return True,0
 
 	def checkSpacing(self,corners):
 		error = []
@@ -57,12 +57,12 @@ class Analyser(object):
 			dist = np.linalg.norm(corners[x]-corners[x+2])
 			error.append(dist)
 		x= 0
-		for dist in error:
+		for pin_dist in error:
 			x=x+1
-			if(dist > self.maxPinDist or dist < self.minPinDist):
-				print("pin %d Space=%3.0f" % (x/2+1,dist))
-				return False
-		return True
+			if(pin_dist > self.maxPinDist or pin_dist < self.minPinDist):
+				#print("Pin %d Space=%5.2f" % (x/2+1,pin_dist))
+				return False,x/2+1
+		return True,0
 	
 	def getLowestCorners(self,botPinsImg):
 		bottomCorners = self.botCornersUsingContour(botPinsImg)
@@ -101,27 +101,34 @@ class Analyser(object):
 		boxes = []
 		areaList = []
 		perimeterList = []
+		
 		for cnt in contours:
-			if(self.checkArea  and self.checkPerimeter(cnt)):
+			if(self.checkArea(cnt)  and self.checkPerimeter(cnt)):
 				rect = cv2.minAreaRect(cnt)
 				box = cv2.boxPoints(rect)
 				box = np.int0(box)
 				boxes.append(box)
 				areaList.append(cv2.contourArea(cnt))
 				perimeterList.append(cv2.arcLength(cnt,True))
-				
-		#print("Max Area: %d   Min Area: %d" % (max(areaList),min(areaList)))
-		#print("Max Perimeter: %d   Min Perimeter: %d" % (max(perimeterList),min(perimeterList)))
 		boxes = np.array(boxes)
+		#print (" Before A&P check) %d :%d",len(contours),len(boxes))
 		return boxes
 
 	def checkArea(self,cnt):
 		area = cv2.contourArea(cnt)
-		return area> self.lowerAreaThreshold 
+		#print ("A: %d",area)
+		if (area> self.lowerAreaThreshold and area < self.upperAreaThreshold):
+			return True
+		else:
+			return False
 
 	def checkPerimeter(self,cnt):
 		perimeter = cv2.arcLength(cnt,True)
-		return perimeter > self.lowerPerimeterThreshold and perimeter < self.upperPerimeterThreshold
+		#print ("P:%d",perimeter)
+		if (perimeter > self.lowerPerimeterThreshold and perimeter < self.upperPerimeterThreshold):
+			return True
+		else:
+			return False
 
 	def getLowerEdgePoints(self,corners):
 

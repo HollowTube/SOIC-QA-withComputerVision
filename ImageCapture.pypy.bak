@@ -27,7 +27,7 @@ class ImageCapture(object):
 		self.thresholdPin = 180
 		self.thresholdLetter = 175
 		self.xadj=20
-		self.yadj=50
+		self.yadj=48
 		
 		self.cap = WebcamVideoStream(src=0).start()
 
@@ -40,13 +40,12 @@ class ImageCapture(object):
 		self.raw = np.float32()
 		self.binaryPin = np.float32()
 		self.binaryLettering = np.float32()
-		self.debug=False
+		self.debug=True
 
 	def findOC(self,img):
 		#Find all contour in image mask away the body 
-		tmp=img
-		cv2.rectangle(tmp,(0 ,120),(640, 480),0,thickness=cv2.FILLED)
-		im2, contours, hierarchy = cv2.findContours(tmp, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+		cv2.rectangle(img,(0 ,100),(640, 480),0,thickness=cv2.FILLED)
+		im2, contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 		contours = np.array(contours)
 		boxes = []
 		
@@ -57,7 +56,7 @@ class ImageCapture(object):
 			box = cv2.boxPoints(rect)
 			box = np.int0(box)	
 			#print area		
-			if(area >150 and area <450 and perimeter <100):
+			if(area >250 and area <450 and perimeter <100):
 				boxes.append(box)
 				#print area
 		boxes = np.array(boxes)
@@ -68,23 +67,36 @@ class ImageCapture(object):
 			if self.debug == True:			
 				cv2.drawContours(img,[box],-1,(128,0,128),2)
 				cv2.imshow('contour',img)
-				cv2.waitKey(1)
+				cv2.waitKey(50)
 			#print box
 			packet=((box[0,0]+box[1,0]+box[2,0]+box[3,0])/4,(box[0,1]+box[1,1]+box[2,1]+box[3,1])/4)
 			packet=np.array(packet)
-			if packet[1] >self.yadj-20 :
+			if packet[1] >self.yadj :
 				boxavr.append(packet)
 		boxavr=np.array(boxavr)
 		last =len(boxavr)
-		
-		if (last <10) :
-			newbox =((45,60),(465,60))
+		print last
+		if  last !=20:
+			cv2.waitKey(5000)
+		if (last <20) :
+			newbox =((40,60),(570,60),(40,370),(570,370))
+			#print newbox
 			return np.array(newbox)
 		xSorted=boxavr[np.argsort(boxavr[:, 0]), :]
 		#print xSorted
-		tl=xSorted[0]
-		tr=xSorted[last-1]		
-		newbox=(tl,tr)
+		if( xSorted[0,1] <xSorted[1,1]):
+			bl=xSorted[0]
+			tl=xSorted[1]
+		else:
+			bl=xSorted[1]
+			tl=xSorted[0]
+		if( xSorted[last-1,1] >xSorted[last-2,1]):
+			tr=xSorted[-1]
+			br=xSorted[-2]
+		else:
+			tr=xSorted[-2]
+			br=xSorted[-1]		
+		newbox=(bl,br,tr,tl)
 		newbox=np.array(newbox)	
 		
 		return newbox
@@ -133,17 +145,17 @@ class ImageCapture(object):
 
 		# Find square that belong to upper level of the pin
 		bw_image = np.uint8(binaryPin)
-		(tl,tr)=self.findOC(bw_image)
+		(bl,br,tr,tl)=self.findOC(bw_image)
 
 		#calculate rotation
-		xdiff,ydiff=tr-tl
+		xdiff,ydiff=br-bl
 		#print xdiff,ydiff
 		if ydiff==0:
 			angle=0
 		else:	
 			angle=np.arctan2(ydiff,xdiff)*180/np.pi	
 
-		if (angle >15 or angle <-15):
+		if (angle >5 or angle <-5):
 			angle=0
 		#print angle
 		# Now rotate image
@@ -152,15 +164,15 @@ class ImageCapture(object):
 		gray_rot=cv2.warpAffine(blur,M,(rows,cols))
 
 		# Find contour again 
+		oldbox=(bl,br,tr,tl)
+		oldbox=np.array(oldbox)
 		ret1,th1 =cv2.threshold(gray_rot,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
 		bw_image = np.uint8(binaryPin)
-		(tl,tr)=self.findOC(bw_image)
-		y1=tl[1]-self.yadj
-		if y1 < 0 :
-			y1=0
+		(bl,br,tr,tl)=self.findOC(bw_image)
+
 		# Now the new boundary is found crop the new image to proper size		
-		final_raw=gray_rot[y1:tl[1]-self.yadj+self.yDSize,tl[0]-self.xadj:tl[0]-self.xadj+self.xDSize]
+		final_raw=gray_rot[bl[1]-self.yadj:bl[1]-self.yadj+self.yDSize,bl[0]-self.xadj:bl[0]-self.xadj+self.xDSize]
 
 		ret1,th1 =cv2.threshold(final_raw,self.thresholdPin,255,cv2.THRESH_BINARY)
 		binaryPin = np.float32(th1)
